@@ -1,29 +1,31 @@
 # README #
+N.B. This is still under development.
 
-This README would normally document whatever steps are necessary to get your application up and running.
+## Abstract ##
+This is a home project to create simple irrigation system based on Raspberry Pi.
 
-### What is this repository for? ###
+## Method ##
+1. Runs as a service
+2. Checks google calendar in order to get next date for 'calendar_eventId' once in a 'check_period_seconds' to reschedule next watering
+3. Sets 'pump_gpio' port in a high mode for 'pump_delay_seconds' when watering happens
+4. Sends email to 'notify_email' each time watering occurs
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+## Configuration ##
+Here's example /usr/local/pirrigation/conf/pirrigation.conf:
+    check_period_seconds = 1440 # once a day
+    calendar_eventId = water
+    pump_gpio = 25
+    pump_delay_seconds = 5
+    notify_email = 'test@test.com'
 
-### How do I get set up? ###
+## Running Instruction ##
+1. [ Create SSH ](http://www.linuxproblem.org/art_9.html) key and copy public key on Pi
+2. Put private key in ssh_keys/pi_rsa
+3. Run gradle deploy
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+## Tested ##
+Tested on Raspberry Pi 2 Model B.
 
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+## Links ##
+1. [ Pi4J ](http://pi4j.com/)
+2. [ Pin numbering for Pi 2 Model B ](http://pi4j.com/pins/model-2b-rev1.html)
