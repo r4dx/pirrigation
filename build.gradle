@@ -1,0 +1,55 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+apply from: 'dependencies.gradle'
+apply from: 'coverage.gradle'
+
+mainClassName = "com.wl.PirrigationApp"
+def jarBaseName = "pirr"
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    baseName = '$jarBaseName'
+    version = '0.0.1'
+}
+
+run {
+    main = "$mainClassName"
+    classpath = sourceSets.main.runtimeClasspath
+    def execArgs = System.getProperty('execArgs')
+    if (execArgs)    
+      args = execArgs.split().toList()
+}
+
+test {
+    scanForTestClasses = true
+    testLogging.showStandardStreams = true
+
+    beforeTest {
+        descriptor -> logger.lifecycle("Running test: " + descriptor)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+
+    test {
+        java {
+            srcDir 'test'
+        }
+    }
+}
