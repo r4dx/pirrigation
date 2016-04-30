@@ -12,7 +12,7 @@ remotes {
   }
 }
 
-task deploy << {
+task deploy(dependsOn: jar) << {
   ssh.run {
     session(remotes.pi) {
       put jar.archivePath, '.'
