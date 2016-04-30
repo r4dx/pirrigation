@@ -2,4 +2,5 @@
 .idea
 build
 out
+ssh_keys
 .gradle
