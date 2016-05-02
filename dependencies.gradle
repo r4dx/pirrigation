@@ -17,6 +17,4 @@ dependencies {
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.20.0'
     compile 'com.google.apis:google-api-services-calendar:v3-rev179-1.19.1'
 
-    compile 'org.mnode.ical4j:ical4j:1.0.7'
-
 }

@@ -4,6 +4,9 @@ N.B. This is still under development.
 ## Abstract ##
 This is a home project to create simple irrigation system based on Raspberry Pi.
 
+## Prerequisites ##
+1. Google event should be 0 minutes long
+
 ## Method ##
 1. Runs as a service
 2. Checks google calendar in order to get next date for 'calendar_eventId' once in a 'check_period_seconds' to reschedule next watering

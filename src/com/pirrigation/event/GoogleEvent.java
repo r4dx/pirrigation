@@ -2,21 +2,20 @@ package com.pirrigation.event;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
-import com.google.common.base.Function;
+import com.google.api.services.calendar.model.Events;
 import java.io.IOException;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class GoogleEvent implements Event {
     private final Calendar calendarService;
-    private Function<String, Recurrence> recurrenceParserFactory;
     private final String calendarId;
     private final String eventId;
 
-    public GoogleEvent(Calendar calendarService, Function<String, Recurrence> recurrenceFactory,
+    public GoogleEvent(Calendar calendarService,
                        String calendarId, String eventId) {
         this.calendarService = calendarService;
-        this.recurrenceParserFactory = recurrenceFactory;
         this.calendarId = calendarId;
         this.eventId = eventId;
     }
@@ -25,33 +24,28 @@ public class GoogleEvent implements Event {
     @Override
     public ZonedDateTime getNextTime() {
         try {
-            com.google.api.services.calendar.model.Event event =
-                    calendarService.events().get(calendarId, eventId).execute();
-            if (event.getRecurrence().size() != 1)
-                throw new RuntimeException("More then one / zero recurrences are found!");
 
-            Recurrence recurrence = recurrenceParserFactory.apply(standartify(event.getRecurrence().get(0)));
-            return recurrence.getNextDate(fromGoogleDateTime(event.getStart().getDateTime()))
-                    .atTime(fromGoogleTime(event.getStart().getDateTime()).toOffsetDateTime().toOffsetTime())
-                    .toZonedDateTime();
+            Events events = calendarService.events().instances(calendarId, eventId)
+                    .setTimeMin(toGoogleDateTime(ZonedDateTime.now()))
+                    .setMaxResults(1).execute();
+
+            if (events.getItems().size() != 1)
+                throw new IllegalArgumentException("No event instances found");
+
+            return fromGoogleDateTime(events.getItems().get(0).getStart().getDateTime());
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private String standartify(String recurrenceStr) {
-        return recurrenceStr.replace("RRULE:", "");
-    }
-
-    private ZonedDateTime fromGoogleTime(DateTime time) {
-        return fromGoogleDateTime(time);
-
-    }
-
     private ZonedDateTime fromGoogleDateTime(DateTime dateTime) {
         // not the fastest way but least hackiest I've figured
         return ZonedDateTime.parse(dateTime.toStringRfc3339(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    private DateTime toGoogleDateTime(ZonedDateTime dateTime) {
+        return new DateTime(Date.from(dateTime.toInstant()));
     }
 
     @Override

@@ -4,4 +4,4 @@ build
 out
 ssh_keys
 .gradle
-conf/google_client_secret.json 
+conf/google_client_secret.json

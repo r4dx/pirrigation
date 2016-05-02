@@ -5,11 +5,13 @@ import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.google.api.services.calendar.Calendar;
+import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.RaspiPin;
 import com.pirrigation.event.Event;
 import com.pirrigation.event.GoogleCalendarService;
 import com.pirrigation.event.GoogleEvent;
-import com.pirrigation.event.iCal4JRecurrence;
 import com.pirrigation.scheduler.EventsScheduler;
+import com.pirrigation.water.PiPump;
 import com.pirrigation.water.Pump;
 import com.pirrigation.water.mocks.MockPump;
 import org.slf4j.Logger;
@@ -25,8 +27,8 @@ import java.util.concurrent.TimeUnit;
 public class PirrigationApp {
     private static final Logger logger = LoggerFactory.getLogger(PirrigationApp.class);
 
-    //private Pump pump = new PiPump(GpioFactory.getInstance(), RaspiPin.GPIO_25);
-    private Pump pump = new MockPump();
+    private Pump pump = new PiPump(GpioFactory.getInstance(), RaspiPin.GPIO_25);
+    //private Pump pump = new MockPump();
 
     private final ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(10);
 
@@ -79,9 +81,7 @@ public class PirrigationApp {
         final String calendarId = "magicforesterrors@gmail.com";
 
         logger.info("Fetching calendar event '{}' from calendar '{}'", eventId, calendarId);
-        return new GoogleEvent(getCalendarService(),
-                recurrenceString -> new iCal4JRecurrence(recurrenceString),
-                calendarId, eventId);
+        return new GoogleEvent(getCalendarService(), calendarId, eventId);
     }
 
     private Calendar getCalendarService() {
