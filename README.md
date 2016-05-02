@@ -27,11 +27,12 @@ Here's example /usr/local/pirrigation/conf/pirrigation.conf:
 3. Run gradle deploy
 
 ## Google calendar configuration ##
-1. Create service account
-2. Copy service account key to conf folder
-3. Share calendar with service account using https://calendar.google.com. Service account email can be found in https://console.developers.google.com/permissions/serviceaccounts?project=PROJECT_ID
-4. N.B. Calendar id is account email now!
-5. Find event id using https://developers.google.com/google-apps/calendar/v3/reference/events/list with q as a parameter
+1. Create google project: https://console.developers.google.com
+2. Create service account https://console.developers.google.com/permissions/serviceaccounts?project=PROJECT_ID
+3. Copy service account key to conf folder
+4. Share calendar with service account using https://calendar.google.com. Service account email can be found in https://console.developers.google.com/permissions/serviceaccounts?project=PROJECT_ID
+5. N.B. Calendar id is account email now!
+6. Find event id using https://developers.google.com/google-apps/calendar/v3/reference/events/list with q as a parameter
 
 ## Tested ##
 Tested on Raspberry Pi 2 Model B.
