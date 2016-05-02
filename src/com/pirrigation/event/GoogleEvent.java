@@ -1,10 +1,11 @@
-package com.pirrigation.calendar;
+package com.pirrigation.event;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.common.base.Function;
 import java.io.IOException;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 
 public class GoogleEvent implements Event {
     private final Calendar calendarService;
@@ -22,7 +23,7 @@ public class GoogleEvent implements Event {
 
 
     @Override
-    public LocalDateTime getNextTime() {
+    public ZonedDateTime getNextTime() {
         try {
             com.google.api.services.calendar.model.Event event =
                     calendarService.events().get(calendarId, eventId).execute();
@@ -30,8 +31,9 @@ public class GoogleEvent implements Event {
                 throw new RuntimeException("More then one / zero recurrences are found!");
 
             Recurrence recurrence = recurrenceParserFactory.apply(standartify(event.getRecurrence().get(0)));
-            return recurrence.getNextDate(googleDateToLocalDate(event.getStart().getDateTime()))
-                    .atTime(googleTimeToLocalTime(event.getStart().getDateTime()));
+            return recurrence.getNextDate(fromGoogleDateTime(event.getStart().getDateTime()))
+                    .atTime(fromGoogleTime(event.getStart().getDateTime()).toOffsetDateTime().toOffsetTime())
+                    .toZonedDateTime();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -42,15 +44,18 @@ public class GoogleEvent implements Event {
         return recurrenceStr.replace("RRULE:", "");
     }
 
-    private LocalDate googleDateToLocalDate(DateTime date) {
-        return googleDateTimeToLocalDateTime(date).toLocalDate();
+    private ZonedDateTime fromGoogleTime(DateTime time) {
+        return fromGoogleDateTime(time);
+
     }
 
-    private LocalTime googleTimeToLocalTime(DateTime time) {
-        return googleDateTimeToLocalDateTime(time).toLocalTime();
+    private ZonedDateTime fromGoogleDateTime(DateTime dateTime) {
+        // not the fastest way but least hackiest I've figured
+        return ZonedDateTime.parse(dateTime.toStringRfc3339(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
-    private LocalDateTime googleDateTimeToLocalDateTime(DateTime dateTime) {
-        return LocalDateTime.ofInstant(Instant.ofEpochSecond(dateTime.getValue()), ZoneId.of("UTC"));
+    @Override
+    public String toString() {
+        return String.format("Calendar: '%s', eventId: '%s'", calendarId, eventId);
     }
 }

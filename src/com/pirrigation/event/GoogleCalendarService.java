@@ -1,4 +1,4 @@
-package com.pirrigation.calendar;
+package com.pirrigation.event;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;

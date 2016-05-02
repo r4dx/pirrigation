@@ -1,22 +1,24 @@
 apply plugin: "org.hidetake.ssh"
 
 ssh.settings {
-  knownHosts = allowAnyHosts
+    knownHosts = allowAnyHosts
 }
 
 remotes {
-  pi {
-    host = '192.168.0.44'
-    user = 'pi'
-    identity = file('ssh_keys/pi_rsa')
-  }
+    pi {
+        host = '192.168.0.44'
+        user = 'pi'
+        identity = file('ssh_keys/pi_rsa')
+    }
 }
 
 task deploy(dependsOn: jar) << {
-  ssh.run {
-    session(remotes.pi) {
-      put jar.archivePath, '.'
-      execute 'sudo java -jar ' + jar.archiveName
+    ssh.run {
+        session(remotes.pi) {
+            def targetDir = './' + jar.baseName
+            execute 'mkdir -p ' + targetDir
+            put new File(jar.destinationDir, "/"), targetDir
+            execute 'cd ' + targetDir + ';sudo java -jar ' + jar.archiveName
+        }
     }
-  }
 }

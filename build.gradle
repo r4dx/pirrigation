@@ -28,6 +28,10 @@ jar {
     }
     baseName = "pirr"
     version = '0.0.1'
+    copy {
+        from 'conf/'
+	into 'build/libs/conf/'
+    }
 }
 
 run {
