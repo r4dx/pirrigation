@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 public class EventsScheduler implements Closeable {
     private final Supplier<Event> eventSupplier;
     private final ScheduledExecutorService service;
+    private ScheduledExecutorService eventsService;
     private final long delay;
     private final TimeUnit timeUnit;
     private Consumer<Event> onEvent;
@@ -33,12 +34,16 @@ public class EventsScheduler implements Closeable {
 
     private ZonedDateTime nextScheduledTime;
 
-    public EventsScheduler(Supplier<Event> eventSupplier, ScheduledExecutorService service, long delay,
+    public EventsScheduler(Supplier<Event> eventSupplier,
+                           ScheduledExecutorService service,
+                           ScheduledExecutorService eventsService,
+                           long delay,
                            TimeUnit timeUnit, Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule,
                            BiConsumer<Throwable, EventsScheduler> onException) {
 
         this.eventSupplier = eventSupplier;
         this.service = service;
+        this.eventsService = eventsService;
         this.delay = delay;
         this.timeUnit = timeUnit;
         this.onEvent = onEvent;
@@ -67,8 +72,8 @@ public class EventsScheduler implements Closeable {
             if (eventTriggerFuture != null && !eventTriggerFuture.cancel(false))
                 throw new InterruptedException("Can't reschedule");
 
-            eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event), delaySeconds, delaySeconds,
-                    TimeUnit.SECONDS);
+            eventTriggerFuture = eventsService.scheduleWithFixedDelay(() -> onEvent.accept(event),
+                    delaySeconds, delaySeconds, TimeUnit.SECONDS);
         }
         catch (Throwable e) {
             onException.accept(e, this);
@@ -81,7 +86,14 @@ public class EventsScheduler implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (!fetchEventsFuture.cancel(true) || !eventTriggerFuture.cancel(true))
+        boolean closed = true;
+        if (fetchEventsFuture != null)
+            closed = fetchEventsFuture.cancel(true);
+
+        if (eventTriggerFuture != null)
+            closed = closed && eventTriggerFuture.cancel(true);
+
+        if (!closed)
             throw new IOException("Cannot cancel scheduled tasks");
     }
 }

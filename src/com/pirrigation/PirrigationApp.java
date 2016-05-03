@@ -11,9 +11,9 @@ import com.pirrigation.event.Event;
 import com.pirrigation.event.GoogleCalendarService;
 import com.pirrigation.event.GoogleEvent;
 import com.pirrigation.scheduler.EventsScheduler;
+import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.PiPump;
 import com.pirrigation.water.Pump;
-import com.pirrigation.water.mocks.MockPump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class PirrigationApp {
     private static final Logger logger = LoggerFactory.getLogger(PirrigationApp.class);
 
-    private Pump pump = new PiPump(GpioFactory.getInstance(), RaspiPin.GPIO_25);
+    private Pump pump = new PiPump(GpioFactory.getInstance(), RaspiPin.GPIO_25, Sleeper.DEFAULT);
     //private Pump pump = new MockPump();
 
     private final ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(10);
@@ -55,10 +55,10 @@ public class PirrigationApp {
 
     private void serve() {
         final long checkFrequencySeconds = 30;
-        final long pumpWorkSeconds = 10;
-        EventsScheduler scheduler = new EventsScheduler(() -> getEvent(), scheduledService,
+        final long pumpWorkMs = 10000;
+        EventsScheduler scheduler = new EventsScheduler(() -> getEvent(), scheduledService, scheduledService,
                 checkFrequencySeconds, TimeUnit.SECONDS,
-                event -> { logger.info("onEvent: {}", event); pump.start(pumpWorkSeconds); },
+                event -> { logger.info("onEvent: {}", event); pump.start(pumpWorkMs); },
                 (newTime, seconds) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
                         seconds),
                 (e, eventsScheduler) -> onErrorConsumer(e, eventsScheduler));
