@@ -63,8 +63,7 @@ public class PirrigationApp {
                     pump.start(pumpWorkMs);
                 },
                 (newTime, seconds) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
-                        seconds),
-                (e, scheduler) -> onErrorConsumer(e, scheduler));
+                        seconds));
 
         GoogleEventsScheduledFetcher fetcher = new GoogleEventsScheduledFetcher(() -> getEvent(),
                 scheduledService, checkFrequencySeconds, TimeUnit.SECONDS,

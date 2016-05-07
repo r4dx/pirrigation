@@ -9,127 +9,121 @@ import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.*;
 
 /**
  * Created by r4dx on 03.05.2016.
  */
 public class EventsSchedulerTest {
     private final int REPEAT_TIMES = 10;
-    private final int EVENT_DAYS_RANDOM_BOUND = 256;
+    private final ScheduledExecutorServiceMockProvider executorsProvider = new ScheduledExecutorServiceMockProvider();
+    private final EventMockProvider eventMockProvider = new EventMockProvider();
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    @Test
+    public void testSchedule() {
+        Event event = eventMockProvider.mockEvent();
+        AtomicInteger eventsCounter = new AtomicInteger();
+
+        EventsScheduler eventsScheduler = getScheduler(
+                currentEvent ->  {
+                    Assert.assertEquals(currentEvent, event);
+                    eventsCounter.incrementAndGet();
+                },
+                (time, seconds) ->  Assert.assertEquals(time.toInstant().toEpochMilli(),
+                        event.getNextTime().toInstant().toEpochMilli()));
+
+        eventsScheduler.schedule(event);
+        Assert.assertEquals(REPEAT_TIMES, eventsCounter.get());
+    }
+
+    private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule,
+                                         Supplier<ScheduledFuture> futureSupplier) {
+        return new EventsScheduler(
+                executorsProvider.callCallbacksImmediatelyInsteadOfFixedDelay(REPEAT_TIMES, futureSupplier),
+                onEvent,
+                onReschedule);
+    }
+
+    private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule) {
+        return getScheduler(onEvent, onReschedule, null);
+    }
 
     @Test
     public void testReschedule() {
-        // new event each time
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent());
-        summary.schedule();
-        Assert.assertEquals(REPEAT_TIMES, summary.getRescheduleCount());
+        AtomicInteger rescheduleCounter = new AtomicInteger();
+        Event event1 = eventMockProvider.mockEvent();
+        Event event2 = eventMockProvider.mockEvent();
+        List<Event> events = new ArrayList<>(Arrays.asList(event1, event2));
+
+        EventsScheduler eventsScheduler = getScheduler(
+                currentEvent ->  events.remove(currentEvent),
+                (time, seconds) ->  rescheduleCounter.incrementAndGet());
+
+        eventsScheduler.schedule(event1);
+        eventsScheduler.schedule(event2);
+        Assert.assertEquals(2, rescheduleCounter.get());
+        Assert.assertEquals(0, events.size());
     }
 
     @Test
     public void testNoReschedulesIfEventIsTheSame() {
-        // one event every time
-        Event event = mockEvent();
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> event);
-        summary.schedule();
-        Assert.assertEquals(1, summary.getRescheduleCount());
+        AtomicInteger rescheduleCounter = new AtomicInteger();
+        Event event = eventMockProvider.mockEvent();
+
+        EventsScheduler eventsScheduler = getScheduler(
+                currentEvent ->  {},
+                (time, seconds) ->  rescheduleCounter.incrementAndGet());
+
+        eventsScheduler.schedule(event);
+        eventsScheduler.schedule(event);
+        Assert.assertEquals(1, rescheduleCounter.get());
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testEventOccursInThePast() {
-        expectedException.expectCause(is(IsInstanceOf.instanceOf(IllegalArgumentException.class)));
-
-        Event event = mockEventInPast();
-        ScheduleResultSummary summary = new ScheduleResultSummary(1, () -> event);
-        summary.schedule();
+        Event event = eventMockProvider.mockEventInPast();
+        EventsScheduler eventsScheduler = getScheduler(event1 -> {}, (zonedDateTime, aLong) -> {});
+        eventsScheduler.schedule(event);
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void testEventCantBeCancelledThusCantBeRescheduled() {
-        expectedException.expectCause(is(IsInstanceOf.instanceOf(InterruptedException.class)));
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent(),
-                null, () -> mockUncancellableFuture());
-        summary.schedule();
-    }
+        EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {},
+                () -> executorsProvider.mockUncancellableFuture());
 
-    @Test
-    public void testExceptionDelegateWorks() {
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent(),
-                null, () -> mockUncancellableFuture(), true);
-        summary.schedule();
-        Assert.assertEquals(REPEAT_TIMES - 1, summary.getExceptionsCount());
-    }
-
-    private ScheduledFuture mockUncancellableFuture() {
-        ScheduledFuture result = mock(ScheduledFuture.class);
-        when(result.cancel(anyBoolean())).thenReturn(false);
-        return result;
-    }
-
-    @Test
-    public void testEventsOccur() {
-        // one event every time
-        Event event = mockEvent();
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> event);
-        summary.schedule();
-        Assert.assertEquals(REPEAT_TIMES, summary.getEventCount());
+        eventsScheduler.schedule(eventMockProvider.mockEvent());
+        eventsScheduler.schedule(eventMockProvider.mockEvent());
     }
 
     @Test
     public void testCanClose() throws IOException {
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent());
-        summary.schedule();
-        summary.close();
+        EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {});
+
+        eventsScheduler.schedule(eventMockProvider.mockEvent());
+        eventsScheduler.close();
     }
 
     @Test
     public void testCanCloseBecauseWasntOpen() throws IOException {
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent());
-        summary.close();
+        EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {});
+        eventsScheduler.close();
     }
 
     @Test(expected = IOException.class)
     public void testCantClose() throws IOException {
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent(),
-                () -> mockUncancellableFuture(), () -> mockUncancellableFuture(), true);
-        summary.schedule();
-        summary.close();
-    }
+        EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {},
+                () -> executorsProvider.mockUncancellableFuture());
 
-    @Test(expected = IOException.class)
-    public void testCantCloseBecauseCantInterruptEventTrigger() throws IOException {
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent(),
-                null, () -> mockUncancellableFuture(), true);
-        summary.schedule();
-        summary.close();
-    }
-
-    @Test(expected = IOException.class)
-    public void testCantCloseBecauseCantInterruptFetchFuture() throws IOException {
-        ScheduleResultSummary summary = new ScheduleResultSummary(REPEAT_TIMES, () -> mockEvent(),
-                () -> mockUncancellableFuture(), null, true);
-        summary.schedule();
-        summary.close();
-    }
-
-    private Event mockEvent() {
-        Event mockedEvent = mock(Event.class);
-        when(mockedEvent.getNextTime()).thenReturn(ZonedDateTime.now().plusDays(new Random().nextInt(
-                EVENT_DAYS_RANDOM_BOUND) + 1));
-        return mockedEvent;
-    }
-
-    private Event mockEventInPast() {
-        Event mockedEvent = mock(Event.class);
-        when(mockedEvent.getNextTime()).thenReturn(ZonedDateTime.now().minusDays(new Random().nextInt(
-                EVENT_DAYS_RANDOM_BOUND) + 1));
-        return mockedEvent;
+        eventsScheduler.schedule(eventMockProvider.mockEvent());
+        eventsScheduler.close();
     }
 }

@@ -36,6 +36,9 @@ public class GoogleEventsScheduledFetcher implements Closeable {
     }
 
     public void schedule() {
+        if (fetchEventsFuture != null)
+            throw new IllegalArgumentException("Already scheduled");
+
         fetchEventsFuture = service.scheduleWithFixedDelay(() -> rescheduleNextTrigger(), 0, delay, timeUnit);
     }
 

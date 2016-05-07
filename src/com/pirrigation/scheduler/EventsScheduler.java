@@ -19,44 +19,36 @@ public class EventsScheduler implements Closeable {
     private ScheduledExecutorService service;
     private Consumer<Event> onEvent;
     private BiConsumer<ZonedDateTime, Long> onEventReschedule;
-    private BiConsumer<Throwable, EventsScheduler> onException;
 
     private ScheduledFuture<?> eventTriggerFuture;
 
     private ZonedDateTime nextScheduledTime;
 
     public EventsScheduler(ScheduledExecutorService service,
-                           Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule,
-                           BiConsumer<Throwable, EventsScheduler> onException) {
+                           Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule) {
 
         this.service = service;
         this.onEvent = onEvent;
         this.onEventReschedule = onEventReschedule;
-        this.onException = onException;
     }
 
     public void schedule(Event event) {
-        try {
-            ZonedDateTime nextTime = event.getNextTime();
-            if (nextTime.equals(nextScheduledTime))
-                return;
+        ZonedDateTime nextTime = event.getNextTime();
+        if (nextTime.equals(nextScheduledTime))
+            return;
 
-            nextScheduledTime = nextTime;
-            long delaySeconds = getDelaySeconds(nextTime);
-            onEventReschedule.accept(nextTime, delaySeconds);
+        nextScheduledTime = nextTime;
+        long delaySeconds = getDelaySeconds(nextTime);
+        onEventReschedule.accept(nextTime, delaySeconds);
 
-            if (delaySeconds <= 0)
-                throw new IllegalArgumentException("Next event occurs in past");
+        if (delaySeconds <= 0)
+            throw new IllegalArgumentException("Next event occurs in past");
 
-            if (eventTriggerFuture != null && !eventTriggerFuture.cancel(false))
-                throw new InterruptedException("Can't schedule");
+        if (eventTriggerFuture != null && !eventTriggerFuture.cancel(false))
+            throw new IllegalStateException("Can't reschedule");
 
-            eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event),
-                    delaySeconds, delaySeconds, TimeUnit.SECONDS);
-        }
-        catch (Throwable e) {
-            onException.accept(e, this);
-        }
+        eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event),
+                delaySeconds, delaySeconds, TimeUnit.SECONDS);
     }
 
     private long getDelaySeconds(ZonedDateTime dateTime) {
