@@ -8,14 +8,10 @@ import com.pirrigation.scheduler.Sleeper;
  */
 public class PiPump implements Pump {
 
-    private final GpioController gpioController;
-    private final Pin pin;
-    private Sleeper sleeper;
+    private final Sleeper sleeper;
     private final GpioPinDigitalOutput pumpPin;
 
     public PiPump(GpioController gpioController, Pin pin, Sleeper sleeper) {
-        this.gpioController = gpioController;
-        this.pin = pin;
         this.sleeper = sleeper;
         pumpPin = gpioController.provisionDigitalOutputPin(pin);
     }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -18,7 +19,8 @@ public class GoogleEventsScheduledFetcher implements Closeable {
     private final ScheduledExecutorService service;
     private final long delay;
     private final TimeUnit timeUnit;
-    private Consumer<Event> onFetchEvent;
+    private final Consumer<Event> onFetchEvent;
+    private BiConsumer<Throwable, GoogleEventsScheduledFetcher> onException;
 
     private ScheduledFuture<?> fetchEventsFuture;
 
@@ -26,13 +28,15 @@ public class GoogleEventsScheduledFetcher implements Closeable {
                                         ScheduledExecutorService service,
                                         long delay,
                                         TimeUnit timeUnit,
-                                        Consumer<Event> onFetchEvent) {
+                                        Consumer<Event> onFetchEvent,
+                                        BiConsumer<Throwable, GoogleEventsScheduledFetcher> onException) {
 
         this.eventSupplier = eventSupplier;
         this.service = service;
         this.delay = delay;
         this.timeUnit = timeUnit;
         this.onFetchEvent = onFetchEvent;
+        this.onException = onException;
     }
 
     public void schedule() {
@@ -43,8 +47,13 @@ public class GoogleEventsScheduledFetcher implements Closeable {
     }
 
     private void rescheduleNextTrigger() {
-        Event event = eventSupplier.get();
-        onFetchEvent.accept(event);
+        try {
+            Event event = eventSupplier.get();
+            onFetchEvent.accept(event);
+        }
+        catch (Throwable e) {
+            onException.accept(e, this);
+        }
     }
 
     @Override

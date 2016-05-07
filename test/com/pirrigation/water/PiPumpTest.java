@@ -16,7 +16,6 @@ import static org.mockito.Mockito.*;
 public class PiPumpTest {
 
     private final Pin pin = RaspiPin.GPIO_25;
-    private GpioController gpioController;
     private GpioPinDigitalOutput outputPin;
     private PiPump pump;
     private Sleeper sleeper;
@@ -24,7 +23,7 @@ public class PiPumpTest {
     @Before
     public void setup() {
         outputPin = mock(GpioPinDigitalOutput.class);
-        gpioController = mock(GpioController.class);
+        GpioController gpioController = mock(GpioController.class);
         when(gpioController.provisionDigitalOutputPin(pin)).thenReturn(outputPin);
         sleeper = mock(Sleeper.class);
 

@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
  */
 public class GoogleEventTest {
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public final ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testNext() throws IOException {

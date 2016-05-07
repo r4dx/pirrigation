@@ -16,9 +16,9 @@ import java.util.function.Consumer;
  * Created by r4dx on 01.05.2016.
  */
 public class EventsScheduler implements Closeable {
-    private ScheduledExecutorService service;
-    private Consumer<Event> onEvent;
-    private BiConsumer<ZonedDateTime, Long> onEventReschedule;
+    private final ScheduledExecutorService service;
+    private final Consumer<Event> onEvent;
+    private final BiConsumer<ZonedDateTime, Long> onEventReschedule;
 
     private ScheduledFuture<?> eventTriggerFuture;
 

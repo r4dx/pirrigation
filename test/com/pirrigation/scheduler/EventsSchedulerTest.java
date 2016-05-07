@@ -1,11 +1,8 @@
 package com.pirrigation.scheduler;
 
 import com.pirrigation.event.Event;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -18,7 +15,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.hamcrest.core.Is.is;
 
 /**
  * Created by r4dx on 03.05.2016.

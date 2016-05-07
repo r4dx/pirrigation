@@ -10,7 +10,7 @@ import java.util.Date;
  * Created by r4dx on 06.05.2016.
  */
 public class GoogleTime {
-    private DateTime dateTime;
+    private final DateTime dateTime;
 
     public GoogleTime(DateTime dateTime){
         this.dateTime = dateTime;

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 /**
  * Created by r4dx on 07.05.2016.
  */
-public class EventMockProvider {
+class EventMockProvider {
     private final int EVENT_DAYS_RANDOM_BOUND = 256;
 
     public Event mockEvent() {

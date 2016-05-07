@@ -18,8 +18,8 @@ import java.util.Arrays;
  */
 public class GoogleCalendarService {
     private final HttpTransport httpTransport;
-    private InputStream clientSecretJson;
-    private String applicationName;
+    private final InputStream clientSecretJson;
+    private final String applicationName;
 
     public GoogleCalendarService(InputStream clientSecretJson, String applicationName) throws GeneralSecurityException,
             IOException {
