@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -20,7 +19,7 @@ public class GoogleEventsScheduledFetcher implements Closeable {
     private final long delay;
     private final TimeUnit timeUnit;
     private final Consumer<Event> onFetchEvent;
-    private BiConsumer<Throwable, GoogleEventsScheduledFetcher> onException;
+    private final Consumer<Throwable> onException;
 
     private ScheduledFuture<?> fetchEventsFuture;
 
@@ -29,7 +28,7 @@ public class GoogleEventsScheduledFetcher implements Closeable {
                                         long delay,
                                         TimeUnit timeUnit,
                                         Consumer<Event> onFetchEvent,
-                                        BiConsumer<Throwable, GoogleEventsScheduledFetcher> onException) {
+                                        Consumer<Throwable> onException) {
 
         this.eventSupplier = eventSupplier;
         this.service = service;
@@ -43,7 +42,7 @@ public class GoogleEventsScheduledFetcher implements Closeable {
         if (fetchEventsFuture != null)
             throw new IllegalArgumentException("Already scheduled");
 
-        fetchEventsFuture = service.scheduleWithFixedDelay(() -> rescheduleNextTrigger(), 0, delay, timeUnit);
+        fetchEventsFuture = service.scheduleWithFixedDelay(this::rescheduleNextTrigger, 0, delay, timeUnit);
     }
 
     private void rescheduleNextTrigger() {
@@ -52,7 +51,7 @@ public class GoogleEventsScheduledFetcher implements Closeable {
             onFetchEvent.accept(event);
         }
         catch (Throwable e) {
-            onException.accept(e, this);
+            onException.accept(e);
         }
     }
 

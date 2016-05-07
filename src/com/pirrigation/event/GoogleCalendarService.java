@@ -11,7 +11,7 @@ import com.google.api.services.calendar.CalendarScopes;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Created by r4dx on 01.05.2016.
@@ -37,7 +37,7 @@ public class GoogleCalendarService {
 
     private Credential getCredential() throws IOException {
         return GoogleCredential.fromStream(clientSecretJson).createScoped(
-                Arrays.asList(CalendarScopes.CALENDAR_READONLY));
+                Collections.singletonList(CalendarScopes.CALENDAR_READONLY));
 
     }
 }

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.core.Is.is;
@@ -78,7 +79,7 @@ public class GoogleEventTest {
         event.setStart(dateTime);
         dateTime.setDateTime(new GoogleTime(zonedCheck).get());
 
-        return mockCalendar(Arrays.asList(event));
+        return mockCalendar(Collections.singletonList(event));
     }
 
     private Calendar mockCalendar(List<Event> eventList) throws IOException {

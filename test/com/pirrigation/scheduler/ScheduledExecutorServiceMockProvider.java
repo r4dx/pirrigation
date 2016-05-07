@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 /**
  * Created by r4dx on 07.05.2016.
  */
-public class ScheduledExecutorServiceMockProvider {
+class ScheduledExecutorServiceMockProvider {
 
     public ScheduledExecutorService callCallbacksImmediatelyInsteadOfFixedDelay(
             int repeatTimes, Supplier<ScheduledFuture> futureSupplier) {
@@ -28,18 +28,13 @@ public class ScheduledExecutorServiceMockProvider {
         return service;
     }
 
-    public ScheduledExecutorService callCallbacksImmediatelyInsteadOfFixedDelay(
-            int repeatTimes) {
-        return callCallbacksImmediatelyInsteadOfFixedDelay(repeatTimes, null);
-    }
-
     public ScheduledFuture mockFuture() {
         ScheduledFuture result = mock(ScheduledFuture.class);
         when(result.cancel(anyBoolean())).thenReturn(true);
         return result;
     }
 
-    public ScheduledFuture mockUncancellableFuture() {
+    public ScheduledFuture mockFutureThatCannotBeCancelled() {
         ScheduledFuture result = mock(ScheduledFuture.class);
         when(result.cancel(anyBoolean())).thenReturn(false);
         return result;

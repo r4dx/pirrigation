@@ -29,7 +29,6 @@ public class GoogleTime {
     }
 
     private ZonedDateTime fromGoogleDateTime(DateTime dateTime) {
-        // not the fastest way but least hackiest I've figured
         return ZonedDateTime.parse(dateTime.toStringRfc3339(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 

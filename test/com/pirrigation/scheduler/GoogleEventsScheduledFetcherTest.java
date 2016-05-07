@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -41,12 +40,12 @@ public class GoogleEventsScheduledFetcherTest {
 
     private GoogleEventsScheduledFetcher getFetcher(Supplier<Event> eventSupplier, Consumer<Event> onEventFetched,
                                                     Supplier<ScheduledFuture> futureSupplier) {
-        return getFetcher(eventSupplier, onEventFetched, futureSupplier, (e, fetcher) -> Assert.fail());
+        return getFetcher(eventSupplier, onEventFetched, futureSupplier, (e) -> Assert.fail());
     }
 
     private GoogleEventsScheduledFetcher getFetcher(Supplier<Event> eventSupplier, Consumer<Event> onEventFetched,
                                                     Supplier<ScheduledFuture> futureSupplier,
-                                                    BiConsumer<Throwable, GoogleEventsScheduledFetcher> onException) {
+                                                    Consumer<Throwable> onException) {
         return new GoogleEventsScheduledFetcher(eventSupplier,
                 executorsProvider.callCallbacksImmediatelyInsteadOfFixedDelay(REPEAT_TIMES, futureSupplier), 10,
                 TimeUnit.SECONDS, onEventFetched, onException);
@@ -54,29 +53,29 @@ public class GoogleEventsScheduledFetcherTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testScheduleMultipleTimes() {
-        GoogleEventsScheduledFetcher fetcher = getFetcher(() -> eventMockProvider.mockEvent(), event -> {});
+        GoogleEventsScheduledFetcher fetcher = getFetcher(eventMockProvider::mockEvent, event -> {});
         fetcher.schedule();
         fetcher.schedule();
     }
 
     @Test
     public void testCanClose() throws IOException {
-        GoogleEventsScheduledFetcher fetcher = getFetcher(() -> eventMockProvider.mockEvent(), event -> {});
+        GoogleEventsScheduledFetcher fetcher = getFetcher(eventMockProvider::mockEvent, event -> {});
         fetcher.schedule();
         fetcher.close();
     }
 
     @Test
-    public void testCanCloseBecauseWasntOpen() throws IOException {
-        GoogleEventsScheduledFetcher fetcher = getFetcher(() -> eventMockProvider.mockEvent(), event -> {});
+    public void testCanCloseBecauseNotOpened() throws IOException {
+        GoogleEventsScheduledFetcher fetcher = getFetcher(eventMockProvider::mockEvent, event -> {});
         fetcher.close();
     }
 
     @Test(expected = IOException.class)
     public void testCantClose() throws IOException {
 
-        GoogleEventsScheduledFetcher fetcher = getFetcher(() -> eventMockProvider.mockEvent(), event -> {},
-                () -> executorsProvider.mockUncancellableFuture());
+        GoogleEventsScheduledFetcher fetcher = getFetcher(eventMockProvider::mockEvent, event -> {},
+                executorsProvider::mockFutureThatCannotBeCancelled);
         fetcher.schedule();
         fetcher.close();
     }
@@ -87,7 +86,7 @@ public class GoogleEventsScheduledFetcherTest {
         AtomicInteger exceptionCounter = new AtomicInteger();
 
         GoogleEventsScheduledFetcher fetcher = getFetcher(() -> { throw testException; }, event -> {},
-                null, (e, fetcher1) -> {
+                null, (e) -> {
                     Assert.assertEquals(e, testException);
                     exceptionCounter.incrementAndGet();
                 });

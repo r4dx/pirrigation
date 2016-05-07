@@ -6,12 +6,9 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.LoggerFactory;
 
-
-
-public class PirrigationApp {
+class PirrigationApp {
     public static void main(String[] args) {
         initLogback();
-
         new PirrigationService().serve();
     }
 
@@ -24,6 +21,8 @@ public class PirrigationApp {
             context.reset();
             configurator.doConfigure("conf/logback.xml");
         } catch (JoranException je) {
+            // Will be caught in printInCaseOfErrorsOrWarnings but still just in case.
+            System.err.println("Error reading logback.xml");
         }
         StatusPrinter.printInCaseOfErrorsOrWarnings(context);
     }

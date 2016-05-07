@@ -19,7 +19,7 @@ public class SleeperTest {
     public void testSleep() throws InterruptedException {
         PowerMockito.mockStatic(Thread.class);
         PowerMockito.doThrow(new InterruptedException()).when(Thread.class);
-        // this initialize the stub in powermock
+        // this initialize the stub in PowerMock
         Thread.sleep(anyLong());
         Sleeper.DEFAULT.sleep(anyLong());
     }

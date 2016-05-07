@@ -61,7 +61,7 @@ public class EventsSchedulerTest {
         List<Event> events = new ArrayList<>(Arrays.asList(event1, event2));
 
         EventsScheduler eventsScheduler = getScheduler(
-                currentEvent ->  events.remove(currentEvent),
+                events::remove,
                 (time, seconds) ->  rescheduleCounter.incrementAndGet());
 
         eventsScheduler.schedule(event1);
@@ -94,7 +94,7 @@ public class EventsSchedulerTest {
     @Test(expected = IllegalStateException.class)
     public void testEventCantBeCancelledThusCantBeRescheduled() {
         EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {},
-                () -> executorsProvider.mockUncancellableFuture());
+                executorsProvider::mockFutureThatCannotBeCancelled);
 
         eventsScheduler.schedule(eventMockProvider.mockEvent());
         eventsScheduler.schedule(eventMockProvider.mockEvent());
@@ -109,7 +109,7 @@ public class EventsSchedulerTest {
     }
 
     @Test
-    public void testCanCloseBecauseWasntOpen() throws IOException {
+    public void testCanCloseBecauseNotOpened() throws IOException {
         EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {});
         eventsScheduler.close();
     }
@@ -117,7 +117,7 @@ public class EventsSchedulerTest {
     @Test(expected = IOException.class)
     public void testCantClose() throws IOException {
         EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {},
-                () -> executorsProvider.mockUncancellableFuture());
+                executorsProvider::mockFutureThatCannotBeCancelled);
 
         eventsScheduler.schedule(eventMockProvider.mockEvent());
         eventsScheduler.close();

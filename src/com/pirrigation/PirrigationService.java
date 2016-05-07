@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by r4dx on 07.05.2016.
  */
-public class PirrigationService implements Closeable {
+class PirrigationService implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(PirrigationApp.class);
 
     // This block of constants will go to configuration
@@ -36,7 +36,7 @@ public class PirrigationService implements Closeable {
     private final int POOL_SIZE = 10;
     private final Pin PUMP_CONTROL_PIN = RaspiPin.GPIO_25;
     private final String CALENDAR_ID = "magicforesterrors@gmail.com";
-    private final String EVENT_ID = "64o3ep9gcgpm2b9l75j36b9k6cp3cbb1c5ijeb9p6op36oj6cpi32p1k60";
+    private final String EVENT_ID = "coqjgpho6cs6ab9i68pjeb9kc9h64b9o68sjab9ockoj2ob469j38p1i68";
     private final String GOOGLE_CLIENT_SECRET_JSON_PATH = "conf/google_client_secret.json";
     private final String GOOGLE_APP_NAME = "Pirrigation";
 
@@ -48,13 +48,13 @@ public class PirrigationService implements Closeable {
     private final GoogleEventsScheduledFetcher fetcher = constructFetcher();
 
     private GoogleEventsScheduledFetcher constructFetcher() {
-        return new GoogleEventsScheduledFetcher(() -> getEvent(),
+        return new GoogleEventsScheduledFetcher(this::getEvent,
                 scheduledService, CHECK_FREQUENCY_SECONDS, TimeUnit.SECONDS,
                 event -> {
                     logger.info("onFetchEvent: {}", event);
                     eventsScheduler.schedule(event);
                 },
-                (e, fetcher1) -> onErrorConsumer(e, fetcher1));
+                this::onErrorConsumer);
     }
 
     private EventsScheduler constructScheduler() {
@@ -71,7 +71,7 @@ public class PirrigationService implements Closeable {
         fetcher.schedule();
     }
 
-    private void onErrorConsumer(Throwable e, GoogleEventsScheduledFetcher fetcher) {
+    private void onErrorConsumer(Throwable e) {
         logger.error("Error while scheduling event", e);
         try {
             close();
@@ -82,7 +82,6 @@ public class PirrigationService implements Closeable {
     }
 
     private Event getEvent() {
-        logger.info("Fetching calendar event '{}' from calendar '{}'", EVENT_ID, CALENDAR_ID);
         return new GoogleEvent(getCalendarService(), CALENDAR_ID, EVENT_ID);
     }
 
