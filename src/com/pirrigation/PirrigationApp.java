@@ -11,6 +11,7 @@ import com.pirrigation.event.Event;
 import com.pirrigation.event.GoogleCalendarService;
 import com.pirrigation.event.GoogleEvent;
 import com.pirrigation.scheduler.EventsScheduler;
+import com.pirrigation.scheduler.GoogleEventsScheduledFetcher;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.PiPump;
 import com.pirrigation.water.Pump;
@@ -50,20 +51,29 @@ public class PirrigationApp {
         } catch (JoranException je) {
         }
         StatusPrinter.printInCaseOfErrorsOrWarnings(context);
-
     }
 
     private void serve() {
         final long checkFrequencySeconds = 30;
         final long pumpWorkMs = 10000;
-        EventsScheduler scheduler = new EventsScheduler(() -> getEvent(), scheduledService, scheduledService,
-                checkFrequencySeconds, TimeUnit.SECONDS,
-                event -> { logger.info("onEvent: {}", event); pump.start(pumpWorkMs); },
+
+        EventsScheduler eventsScheduler = new EventsScheduler(scheduledService,
+                event -> {
+                    logger.info("onEvent: {}", event);
+                    pump.start(pumpWorkMs);
+                },
                 (newTime, seconds) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
                         seconds),
-                (e, eventsScheduler) -> onErrorConsumer(e, eventsScheduler));
+                (e, scheduler) -> onErrorConsumer(e, scheduler));
 
-        scheduler.schedule();
+        GoogleEventsScheduledFetcher fetcher = new GoogleEventsScheduledFetcher(() -> getEvent(),
+                scheduledService, checkFrequencySeconds, TimeUnit.SECONDS,
+                event -> {
+                    logger.info("onFetchEvent: {}", event);
+                    eventsScheduler.schedule(event);
+                });
+
+        fetcher.schedule();
     }
 
     private void onErrorConsumer(Throwable e, EventsScheduler scheduler) {

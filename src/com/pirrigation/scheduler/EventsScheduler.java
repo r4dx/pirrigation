@@ -4,60 +4,39 @@ import com.pirrigation.event.Event;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Created by r4dx on 01.05.2016.
  */
 public class EventsScheduler implements Closeable {
-    private final Supplier<Event> eventSupplier;
-    private final ScheduledExecutorService service;
-    private ScheduledExecutorService eventsService;
-    private final long delay;
-    private final TimeUnit timeUnit;
+    private ScheduledExecutorService service;
     private Consumer<Event> onEvent;
     private BiConsumer<ZonedDateTime, Long> onEventReschedule;
     private BiConsumer<Throwable, EventsScheduler> onException;
 
-    private ScheduledFuture<?> fetchEventsFuture;
     private ScheduledFuture<?> eventTriggerFuture;
 
     private ZonedDateTime nextScheduledTime;
 
-    public EventsScheduler(Supplier<Event> eventSupplier,
-                           ScheduledExecutorService service,
-                           ScheduledExecutorService eventsService,
-                           long delay,
-                           TimeUnit timeUnit, Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule,
+    public EventsScheduler(ScheduledExecutorService service,
+                           Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule,
                            BiConsumer<Throwable, EventsScheduler> onException) {
 
-        this.eventSupplier = eventSupplier;
         this.service = service;
-        this.eventsService = eventsService;
-        this.delay = delay;
-        this.timeUnit = timeUnit;
         this.onEvent = onEvent;
         this.onEventReschedule = onEventReschedule;
         this.onException = onException;
     }
 
-    public void schedule() {
-        fetchEventsFuture = service.scheduleWithFixedDelay(() -> rescheduleNextTrigger(), 0, delay, timeUnit);
-    }
-
-    private void rescheduleNextTrigger() {
+    public void schedule(Event event) {
         try {
-            Event event = eventSupplier.get();
             ZonedDateTime nextTime = event.getNextTime();
             if (nextTime.equals(nextScheduledTime))
                 return;
@@ -70,9 +49,9 @@ public class EventsScheduler implements Closeable {
                 throw new IllegalArgumentException("Next event occurs in past");
 
             if (eventTriggerFuture != null && !eventTriggerFuture.cancel(false))
-                throw new InterruptedException("Can't reschedule");
+                throw new InterruptedException("Can't schedule");
 
-            eventTriggerFuture = eventsService.scheduleWithFixedDelay(() -> onEvent.accept(event),
+            eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event),
                     delaySeconds, delaySeconds, TimeUnit.SECONDS);
         }
         catch (Throwable e) {
@@ -86,14 +65,8 @@ public class EventsScheduler implements Closeable {
 
     @Override
     public void close() throws IOException {
-        boolean closed = true;
-        if (fetchEventsFuture != null)
-            closed = fetchEventsFuture.cancel(true);
-
         if (eventTriggerFuture != null)
-            closed = closed && eventTriggerFuture.cancel(true);
-
-        if (!closed)
-            throw new IOException("Cannot cancel scheduled tasks");
+            if (!eventTriggerFuture.cancel(true))
+                throw new IOException("Cannot cancel scheduled tasks");
     }
 }
