@@ -65,8 +65,13 @@ class PirrigationService implements Closeable {
     private EventsScheduler constructScheduler() {
         return new EventsScheduler(scheduledService,
                 event -> {
-                    logger.info("onEvent: {}", event);
-                    pump.start(PUMP_WORK_MS);
+                    try {
+                        logger.info("onEvent: {}", event);
+                        pump.start(PUMP_WORK_MS);
+                    }
+                    catch (Throwable e) {
+                        logger.error("Problems while pumping water", e);
+                    }
                 },
                 (newTime, nanos) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
                         TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)));

@@ -44,7 +44,7 @@ public class EventsScheduler implements Closeable {
         if (delayNanos <= 0)
             throw new IllegalArgumentException("Next event occurs in past");
 
-        if (eventTriggerFuture != null && !eventTriggerFuture.cancel(false))
+        if (eventTriggerFuture != null && !eventTriggerFuture.cancel(true))
             throw new IllegalStateException("Can't reschedule");
 
         eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event),
