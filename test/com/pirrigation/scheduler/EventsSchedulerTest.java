@@ -42,15 +42,26 @@ public class EventsSchedulerTest {
     }
 
     private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule,
-                                         Supplier<ScheduledFuture> futureSupplier) {
+                                         Supplier<ScheduledFuture> futureSupplier, Integer repeatTimes) {
         return new EventsScheduler(
-                executorsProvider.callCallbacksImmediatelyInsteadOfFixedDelay(REPEAT_TIMES, futureSupplier),
+                executorsProvider.callCallbacksImmediatelyInsteadOfFixedDelay(
+                        repeatTimes == null ? REPEAT_TIMES : repeatTimes, futureSupplier),
                 onEvent,
                 onReschedule);
     }
 
+    private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule,
+                                         Supplier<ScheduledFuture> futureSupplier) {
+        return getScheduler(onEvent, onReschedule, futureSupplier, null);
+    }
+
+    private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule,
+                                         Integer repeatTimes) {
+        return getScheduler(onEvent, onReschedule, null, repeatTimes);
+    }
+
     private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule) {
-        return getScheduler(onEvent, onReschedule, null);
+        return getScheduler(onEvent, onReschedule, null, null);
     }
 
     @Test
@@ -61,8 +72,14 @@ public class EventsSchedulerTest {
         List<Event> events = new ArrayList<>(Arrays.asList(event1, event2));
 
         EventsScheduler eventsScheduler = getScheduler(
-                events::remove,
-                (time, seconds) ->  rescheduleCounter.incrementAndGet());
+                event -> {
+                    if (!events.contains(event))
+                        Assert.fail();
+
+                    events.remove(event);
+                },
+                (time, seconds) ->  rescheduleCounter.incrementAndGet(),
+                1);
 
         eventsScheduler.schedule(event1);
         eventsScheduler.schedule(event2);
