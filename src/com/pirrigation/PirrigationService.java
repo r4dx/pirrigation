@@ -42,7 +42,12 @@ class PirrigationService implements Closeable {
 
     private final ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(POOL_SIZE);
     private final Pump pump = new PiPump(GpioFactory.getInstance(), PUMP_CONTROL_PIN, Sleeper.DEFAULT);
-    //private Pump pump = new MockPump();
+    /*private Pump pump = new Pump() {
+        @Override
+        public void start(long workMs) {
+            Sleeper.DEFAULT.sleep(workMs);
+        }
+    };*/
 
     private final EventsScheduler eventsScheduler = constructScheduler();
     private final GoogleEventsScheduledFetcher fetcher = constructFetcher();
@@ -63,8 +68,8 @@ class PirrigationService implements Closeable {
                     logger.info("onEvent: {}", event);
                     pump.start(PUMP_WORK_MS);
                 },
-                (newTime, seconds) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
-                        seconds));
+                (newTime, nanos) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
+                        TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)));
     }
 
     public void serve() {

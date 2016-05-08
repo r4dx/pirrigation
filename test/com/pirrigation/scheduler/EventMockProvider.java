@@ -20,6 +20,14 @@ class EventMockProvider {
         return mockedEvent;
     }
 
+    public Event mockEvent(int msFromNow) {
+        Event mockedEvent = mock(Event.class);
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime nextTime = now.toInstant().plusMillis(msFromNow).atZone(now.getZone());
+        when(mockedEvent.getNextTime()).thenReturn(nextTime);
+        return mockedEvent;
+    }
+
     public Event mockEventInPast() {
         Event mockedEvent = mock(Event.class);
         when(mockedEvent.getNextTime()).thenReturn(ZonedDateTime.now().minusDays(new Random().nextInt(
