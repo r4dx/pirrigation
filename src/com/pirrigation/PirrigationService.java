@@ -12,6 +12,7 @@ import com.pirrigation.scheduler.GoogleEventsScheduledFetcher;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.PiPump;
 import com.pirrigation.water.Pump;
+import com.pirrigation.water.StubPump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,13 +42,8 @@ class PirrigationService implements Closeable {
     private final String GOOGLE_APP_NAME = "Pirrigation";
 
     private final ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(POOL_SIZE);
-    private final Pump pump = new PiPump(GpioFactory.getInstance(), PUMP_CONTROL_PIN, Sleeper.DEFAULT);
-    /*private Pump pump = new Pump() {
-        @Override
-        public void start(long workMs) {
-            Sleeper.DEFAULT.sleep(workMs);
-        }
-    };*/
+    //private final Pump pump = new PiPump(GpioFactory.getInstance(), PUMP_CONTROL_PIN, Sleeper.DEFAULT);
+    private Pump pump = new StubPump(Sleeper.DEFAULT);
 
     private final EventsScheduler eventsScheduler = constructScheduler();
     private final GoogleEventsScheduledFetcher fetcher = constructFetcher();
