@@ -38,4 +38,15 @@ public class PiPumpTest {
         verify(sleeper).sleep(sleepTime);
         verify(outputPin).low();
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testSetLowOnException() {
+        doThrow(new RuntimeException()).when(sleeper).sleep(anyLong());
+
+        final long sleepTime = 1;
+        pump.start(sleepTime);
+        verify(outputPin).high();
+        verify(sleeper).sleep(sleepTime);
+        verify(outputPin).low();
+    }
 }

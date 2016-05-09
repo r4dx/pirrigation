@@ -19,7 +19,11 @@ public class PiPump implements Pump {
     @Override
     public void start(long workMs) {
         pumpPin.high();
-        sleeper.sleep(workMs);
-        pumpPin.low();
+        try {
+            sleeper.sleep(workMs);
+        }
+        finally {
+            pumpPin.low();
+        }
     }
 }
