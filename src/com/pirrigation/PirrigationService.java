@@ -1,19 +1,14 @@
 package com.pirrigation;
 
 import com.google.api.services.calendar.Calendar;
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.Pin;
-import com.pi4j.io.gpio.RaspiPin;
 import com.pirrigation.config.PirrigationServiceConfig;
 import com.pirrigation.event.Event;
 import com.pirrigation.event.GoogleCalendarService;
 import com.pirrigation.event.GoogleEvent;
 import com.pirrigation.scheduler.EventsScheduler;
 import com.pirrigation.scheduler.GoogleEventsScheduledFetcher;
-import com.pirrigation.scheduler.Sleeper;
-import com.pirrigation.water.PiPump;
+
 import com.pirrigation.water.Pump;
-import com.pirrigation.water.StubPump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,12 +34,11 @@ class PirrigationService implements Closeable {
     private final GoogleEventsScheduledFetcher fetcher;
     private final PirrigationServiceConfig config;
 
-    public PirrigationService(PirrigationServiceConfig config) {
+    public PirrigationService(PirrigationServiceConfig config, Pump pump) {
 
         this.config = config;
-        scheduledService = Executors.newScheduledThreadPool(config.getPoolSize());
-        //pump = new PiPump(GpioFactory.getInstance(), RaspiPin.getPinByName(config.getPumpControlPin()), Sleeper.DEFAULT);
-        pump =  new StubPump(Sleeper.DEFAULT);
+        this.scheduledService = Executors.newScheduledThreadPool(config.getPoolSize());
+        this.pump = pump;
         eventsScheduler = constructScheduler();
         fetcher = constructFetcher();
     }
@@ -70,8 +64,8 @@ class PirrigationService implements Closeable {
                         logger.error("Problems while pumping water", e);
                     }
                 },
-                (newTime, nanos) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)", newTime,
-                        TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)));
+                (newTime, nanos) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)",
+                        newTime, TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)));
     }
 
     public void serve() {
