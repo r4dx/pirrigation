@@ -33,6 +33,7 @@ jar {
 	into 'build/libs/conf/'
     }
 }
+jar.dependsOn jacocoTestReport
 
 run {
     main = "$mainClassName"

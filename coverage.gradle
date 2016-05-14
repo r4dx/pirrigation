@@ -1,15 +1,10 @@
-// Copied from https://github.com/springfox/springfox/blob/fb780ee1f14627b239fba95730a69900b9b2313a/gradle/coverage.gradle
+// Copied and modified from https://github.com/springfox/springfox/blob/fb780ee1f14627b239fba95730a69900b9b2313a/gradle/coverage.gradle
 
 apply plugin: 'jacoco'
 
 ext {
     limits = [
-            'instruction': 100,
-            'branch'     : 100,
-            'line'       : 100,
-            'complexity' : 100,
-            'method'     : 100,
-            'class'      : 100
+            'line'       : 68,
     ]
 }
 
@@ -66,4 +61,4 @@ jacocoTestReport {
         }
     }
 }
-check.dependsOn jacocoTestReport
+jacocoTestReport.dependsOn test
