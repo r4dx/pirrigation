@@ -1,5 +1,6 @@
 package com.pirrigation.providers;
 
+import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pirrigation.config.PirrigationServiceConfig;
 import com.pirrigation.scheduler.Sleeper;
@@ -39,7 +40,7 @@ public class PirrigationServiceModuleTest {
 
     @Test
     public void testProvidePumpDoesNotThrowExceptions() {
-        module.providePump(mock(Sleeper.class), mock(PirrigationServiceConfig.class));
+        module.providePump(mock(Sleeper.class), mock(PirrigationServiceConfig.class), mock(GpioController.class));
     }
 
     @Test

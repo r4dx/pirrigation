@@ -31,7 +31,6 @@ public class PirrigationService implements Closeable {
     private Supplier<Event> eventSupplier;
 
     public PirrigationService(PirrigationServiceConfig config, Pump pump, Supplier<Event> eventSupplier) {
-
         this.config = config;
         this.eventSupplier = eventSupplier;
         this.scheduledService = Executors.newScheduledThreadPool(config.getPoolSize());
