@@ -13,6 +13,7 @@ import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.PiPump;
 import com.pirrigation.water.Pump;
 import com.pirrigation.water.StubPump;
+import org.mockito.Mockito;
 
 import java.util.function.Supplier;
 
@@ -43,6 +44,7 @@ public class PirrigationServiceModule extends AbstractModule {
 
     @Provides
     public GpioController provideGpioController() {
+        //return Mockito.mock(GpioController.class);
         return GpioFactory.getInstance();
     }
 
