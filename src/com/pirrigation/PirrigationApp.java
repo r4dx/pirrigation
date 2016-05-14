@@ -6,13 +6,17 @@ import ch.qos.logback.core.joran.spi.JoranException;
 import ch.qos.logback.core.util.StatusPrinter;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.pirrigation.providers.EventModule;
+import com.pirrigation.providers.GoogleCalendarModule;
+import com.pirrigation.providers.PirrigationServiceModule;
 import org.slf4j.LoggerFactory;
 
 class PirrigationApp {
     public static void main(String[] args) {
         initLogback();
 
-        Injector injector = Guice.createInjector(new PirrigationModule());
+        Injector injector = Guice.createInjector(new PirrigationServiceModule(), new EventModule(),
+                new GoogleCalendarModule());
         PirrigationService service = injector.getInstance(PirrigationService.class);
         service.serve();
     }

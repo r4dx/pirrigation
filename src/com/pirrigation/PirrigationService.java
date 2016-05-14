@@ -1,10 +1,7 @@
 package com.pirrigation;
 
-import com.google.api.services.calendar.Calendar;
 import com.pirrigation.config.PirrigationServiceConfig;
 import com.pirrigation.event.Event;
-import com.pirrigation.event.GoogleCalendarService;
-import com.pirrigation.event.GoogleEvent;
 import com.pirrigation.scheduler.EventsScheduler;
 import com.pirrigation.scheduler.GoogleEventsScheduledFetcher;
 
@@ -13,18 +10,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * Created by r4dx on 07.05.2016.
  */
-class PirrigationService implements Closeable {
+public class PirrigationService implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(PirrigationApp.class);
 
     private final ScheduledExecutorService scheduledService;
@@ -33,10 +28,12 @@ class PirrigationService implements Closeable {
     private final EventsScheduler eventsScheduler;
     private final GoogleEventsScheduledFetcher fetcher;
     private final PirrigationServiceConfig config;
+    private Supplier<Event> eventSupplier;
 
-    public PirrigationService(PirrigationServiceConfig config, Pump pump) {
+    public PirrigationService(PirrigationServiceConfig config, Pump pump, Supplier<Event> eventSupplier) {
 
         this.config = config;
+        this.eventSupplier = eventSupplier;
         this.scheduledService = Executors.newScheduledThreadPool(config.getPoolSize());
         this.pump = pump;
         eventsScheduler = constructScheduler();
@@ -44,7 +41,7 @@ class PirrigationService implements Closeable {
     }
 
     private GoogleEventsScheduledFetcher constructFetcher() {
-        return new GoogleEventsScheduledFetcher(this::getEvent,
+        return new GoogleEventsScheduledFetcher(eventSupplier,
                 scheduledService, config.getCheckFrequencySeconds(), TimeUnit.SECONDS,
                 event -> {
                     logger.info("onFetchEvent: {}", event);
@@ -74,24 +71,6 @@ class PirrigationService implements Closeable {
 
     private void onErrorConsumer(Throwable e) {
         logger.error("Error while scheduling event", e);
-        try {
-            close();
-        }
-        catch (IOException e1){
-            logger.error("Error while while closing fetcher or scheduler", e1);
-        }
-    }
-
-    private Event getEvent() {
-        return new GoogleEvent(getCalendarService(), config.getCalendarId(), config.getEventId());
-    }
-
-    private Calendar getCalendarService() {
-        try (InputStream is = new FileInputStream(config.getGoogleClientSecretJsonPath())) {
-            return new GoogleCalendarService(is, config.getGoogleAppName()).get();
-        } catch (GeneralSecurityException | IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
