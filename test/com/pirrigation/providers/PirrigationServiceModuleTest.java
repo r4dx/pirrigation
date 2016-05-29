@@ -12,9 +12,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.time.Duration;
 import java.util.function.Supplier;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by r4dx on 09.05.2016.
@@ -36,7 +38,9 @@ public class PirrigationServiceModuleTest {
 
     @Test
     public void testProvidePirrigationServiceDoesNotThrowExceptions() {
-        module.providePirrigationService(mock(PirrigationServiceConfig.class), mock(Pump.class), mock(Supplier.class));
+        PirrigationServiceConfig config = mock(PirrigationServiceConfig.class);
+        when(config.getCheckFrequency()).thenReturn(Duration.ofMillis(1));
+        module.providePirrigationService(config, mock(Pump.class), mock(Supplier.class));
     }
 
     @Test

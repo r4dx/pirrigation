@@ -2,13 +2,15 @@ package com.pirrigation.config;
 
 import com.pi4j.io.gpio.Pin;
 
+import java.time.Duration;
+
 /**
  * Created by r4dx on 09.05.2016.
  */
 public interface PirrigationServiceConfig {
-    long getPumpWorkMs();
+    Duration getPumpWorkDuration();
 
-    long getCheckFrequencySeconds();
+    Duration getCheckFrequency();
 
     int getPoolSize();
 

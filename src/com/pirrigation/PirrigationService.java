@@ -41,7 +41,7 @@ public class PirrigationService implements Closeable {
 
     private GoogleEventsScheduledFetcher constructFetcher() {
         return new GoogleEventsScheduledFetcher(eventSupplier,
-                scheduledService, config.getCheckFrequencySeconds(), TimeUnit.SECONDS,
+                scheduledService, config.getCheckFrequency().getSeconds(), TimeUnit.SECONDS,
                 event -> {
                     logger.info("onFetchEvent: {}", event);
                     eventsScheduler.schedule(event);
@@ -54,7 +54,7 @@ public class PirrigationService implements Closeable {
                 event -> {
                     try {
                         logger.info("onEvent: {}", event);
-                        pump.start(config.getPumpWorkMs());
+                        pump.start(config.getPumpWorkDuration());
                     }
                     catch (Throwable e) {
                         logger.error("Problems while pumping water", e);
@@ -65,6 +65,9 @@ public class PirrigationService implements Closeable {
     }
 
     public void serve() {
+        logger.info("Starting service");
+        logger.info("Configuration:" + config.toString());
+
         fetcher.schedule();
     }
 

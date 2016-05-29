@@ -1,16 +1,21 @@
 package com.pirrigation.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.RaspiPin;
 import com.typesafe.config.Config;
+
+import java.time.Duration;
 
 /**
  * Created by r4dx on 09.05.2016.
  */
 public class PirrigationServiceConfigImpl implements PirrigationServiceConfig {
 
-    private final long pumpWorkMs;
-    private final long checkFrequencySeconds;
+    private final Duration pumpWorkDuration;
+    private final Duration checkFrequency;
     private final int poolSize;
     private final Pin pumpControlPin;
     private final String calendarId;
@@ -19,8 +24,8 @@ public class PirrigationServiceConfigImpl implements PirrigationServiceConfig {
     private final String googleAppName;
 
     public PirrigationServiceConfigImpl(Config config){
-        this.pumpWorkMs = config.getLong("pumpWorkMs");
-        this.checkFrequencySeconds = config.getLong("checkFrequencySeconds");
+        this.pumpWorkDuration = config.getDuration("pumpWorkDuration");
+        this.checkFrequency = config.getDuration("checkFrequency");
         this.poolSize = config.getInt("poolSize");
         this.pumpControlPin = RaspiPin.getPinByName(config.getString("pumpControlPin"));
         this.calendarId = config.getString("calendarId");
@@ -29,14 +34,13 @@ public class PirrigationServiceConfigImpl implements PirrigationServiceConfig {
         this.googleAppName = config.getString("googleAppName");
     }
 
-    @Override
-    public long getPumpWorkMs() {
-        return pumpWorkMs;
+    public Duration getPumpWorkDuration() {
+        return pumpWorkDuration;
     }
 
     @Override
-    public long getCheckFrequencySeconds() {
-        return checkFrequencySeconds;
+    public Duration getCheckFrequency() {
+        return checkFrequency;
     }
 
     @Override
@@ -67,5 +71,16 @@ public class PirrigationServiceConfigImpl implements PirrigationServiceConfig {
     @Override
     public String getGoogleAppName() {
         return googleAppName;
+    }
+
+    @Override
+    public String toString() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        try {
+            return mapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

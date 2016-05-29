@@ -8,6 +8,8 @@ import com.pirrigation.scheduler.Sleeper;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Duration;
+
 import static org.mockito.Mockito.*;
 
 /**
@@ -32,10 +34,10 @@ public class PiPumpTest {
 
     @Test
     public void testStarted() {
-        final long sleepTime = 1;
+        final Duration sleepTime = Duration.ofMillis(1);
         pump.start(sleepTime);
         verify(outputPin).high();
-        verify(sleeper).sleep(sleepTime);
+        verify(sleeper).sleep(sleepTime.toMillis());
         verify(outputPin).low();
     }
 
@@ -43,10 +45,10 @@ public class PiPumpTest {
     public void testSetLowOnException() {
         doThrow(new RuntimeException()).when(sleeper).sleep(anyLong());
 
-        final long sleepTime = 1;
+        final Duration sleepTime = Duration.ofMillis(1);
         pump.start(sleepTime);
         verify(outputPin).high();
-        verify(sleeper).sleep(sleepTime);
+        verify(sleeper).sleep(sleepTime.toMillis());
         verify(outputPin).low();
     }
 }
