@@ -6,8 +6,6 @@ import com.typesafe.config.Config;
  * Created by r4dx on 29.05.2016.
  */
 public class GoogleCalendarConfigImpl implements GoogleCalendarConfig {
-
-    private final SchedulerConfig schedulerConfig;
     private final String calendarId;
     private final String eventId;
     private final String secretJsonPath;
@@ -18,13 +16,6 @@ public class GoogleCalendarConfigImpl implements GoogleCalendarConfig {
         this.eventId = config.getString("googleCalendar.eventId");
         this.secretJsonPath = config.getString("googleCalendar.secretJsonPath");
         this.appName = config.getString("googleCalendar.appName");
-        this.schedulerConfig = new SchedulerConfigImpl(config);
-
-    }
-
-    @Override
-    public SchedulerConfig getSchedulerConfig() {
-        return schedulerConfig;
     }
 
     @Override

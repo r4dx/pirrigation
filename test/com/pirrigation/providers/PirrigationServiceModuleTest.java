@@ -41,6 +41,16 @@ public class PirrigationServiceModuleTest {
     }
 
     @Test
+    public void testProvideSchedulerConfigDoesNotThrowExceptions() {
+        module.provideSchedulerConfig(mock(Config.class));
+    }
+
+    @Test
+    public void testProvidePumpConfigDoesNotThrowExceptions() {
+        module.providePumpConfig(mock(Config.class));
+    }
+
+    @Test
     public void testProvidePumpDoesNotThrowExceptions() {
         module.providePump(mock(Sleeper.class), mock(PumpConfig.class), mock(GpioController.class));
     }

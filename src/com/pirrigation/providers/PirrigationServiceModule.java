@@ -2,6 +2,7 @@ package com.pirrigation.providers;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.RaspiPin;
@@ -15,6 +16,8 @@ import com.pirrigation.water.StubPump;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.function.Supplier;
@@ -23,21 +26,30 @@ import java.util.function.Supplier;
  * Created by r4dx on 09.05.2016.
  */
 public class PirrigationServiceModule extends AbstractModule {
+    private static final Logger logger = LoggerFactory.getLogger(PirrigationServiceModule.class);
+
     @Override
     protected void configure() {
     }
 
     @Provides
+    @Singleton
     public SchedulerConfig provideSchedulerConfig(Config hoconConfig) {
-        return new SchedulerConfigImpl(hoconConfig);
+        SchedulerConfig result = new SchedulerConfigImpl(hoconConfig);
+        logger.info("Loaded schedulerConfig: " + result.toString());
+        return result;
     }
 
     @Provides
+    @Singleton
     public PumpConfig providePumpConfig(Config hoconConfig) {
-        return new PumpConfigImpl(hoconConfig);
+        PumpConfig result = new PumpConfigImpl(hoconConfig);
+        logger.info("Loaded pumpConfig: " + result.toString());
+        return result;
     }
 
     @Provides
+    @Singleton
     public Config provideHoconConfig() {
         return ConfigFactory.parseFile(new File("conf/pirrigation.conf"));
     }

@@ -23,6 +23,7 @@ public class PirrigationServiceConfigImplTest {
 
     private PumpConfig pumpConfig;
     private GoogleCalendarConfig googleCalendarConfig;
+    private SchedulerConfig scheduledConfig;
 
     @Before
     public void setup() {
@@ -49,6 +50,8 @@ public class PirrigationServiceConfigImplTest {
         Config hoconConfig = ConfigFactory.parseString(conf);
         pumpConfig = new PumpConfigImpl(hoconConfig);
         googleCalendarConfig = new GoogleCalendarConfigImpl(hoconConfig);
+        scheduledConfig = new SchedulerConfigImpl(hoconConfig);
+
     }
 
     @Test
@@ -67,8 +70,8 @@ public class PirrigationServiceConfigImplTest {
 
     @Test
     public void testScheduledConfig() {
-        Assert.assertEquals(Duration.ofSeconds(1), googleCalendarConfig.getSchedulerConfig().getCheckFrequency());
-        Assert.assertEquals(1, googleCalendarConfig.getSchedulerConfig().getPoolSize());
+        Assert.assertEquals(Duration.ofSeconds(1), scheduledConfig.getCheckFrequency());
+        Assert.assertEquals(1, scheduledConfig.getPoolSize());
     }
 
     @Test
@@ -83,7 +86,7 @@ public class PirrigationServiceConfigImplTest {
 
     @Test
     public void testSchedulerConfigToString() {
-        testToString(SchedulerConfigImpl.class, googleCalendarConfig.getSchedulerConfig());
+        testToString(SchedulerConfigImpl.class, scheduledConfig);
     }
 
     private void testToString(Class klass, Object obj) {
@@ -96,16 +99,7 @@ public class PirrigationServiceConfigImplTest {
     }
 
     private List<Field> getAllFields(Class klass, Predicate<Field> filter) {
-        List<Field> fields = new ArrayList<>();
-        fields.addAll(Arrays.asList(klass.getDeclaredFields()).stream().filter(filter).collect(Collectors.toList()));
-
-        List<Field> fieldsToAdd = new ArrayList<>();
-        for (Field field : fields)
-            if (filter.test(field))
-                fieldsToAdd.addAll(getAllFields(field.getClass(), filter));
-
-        fields.addAll(fieldsToAdd);
-        return fields;
+        return Arrays.asList(klass.getDeclaredFields()).stream().filter(filter).collect(Collectors.toList());
     }
 
 }
