@@ -34,8 +34,8 @@ public class PirrigationServiceConfigStubImpl implements PirrigationServiceConfi
     }
 
     @Override
-    public String getPumpControlPin() {
-        return PUMP_CONTROL_PIN.getName();
+    public Pin getPumpControlPin() {
+        return PUMP_CONTROL_PIN;
     }
 
     @Override

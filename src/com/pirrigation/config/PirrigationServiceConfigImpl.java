@@ -2,48 +2,70 @@ package com.pirrigation.config;
 
 import com.pi4j.io.gpio.Pin;
 import com.pi4j.io.gpio.RaspiPin;
+import com.typesafe.config.Config;
 
 /**
  * Created by r4dx on 09.05.2016.
  */
 public class PirrigationServiceConfigImpl implements PirrigationServiceConfig {
+
+    private final long pumpWorkMs;
+    private final long checkFrequencySeconds;
+    private final int poolSize;
+    private final Pin pumpControlPin;
+    private final String calendarId;
+    private final String eventId;
+    private final String googleClientSecretJsonPath;
+    private final String googleAppName;
+
+    public PirrigationServiceConfigImpl(Config config){
+        this.pumpWorkMs = config.getLong("pumpWorkMs");
+        this.checkFrequencySeconds = config.getLong("checkFrequencySeconds");
+        this.poolSize = config.getInt("poolSize");
+        this.pumpControlPin = RaspiPin.getPinByName(config.getString("pumpControlPin"));
+        this.calendarId = config.getString("calendarId");
+        this.eventId = config.getString("eventId");
+        this.googleClientSecretJsonPath = config.getString("googleClientSecretJsonPath");
+        this.googleAppName = config.getString("googleAppName");
+    }
+
     @Override
     public long getPumpWorkMs() {
-        throw new RuntimeException("Not Implemented");
+        return pumpWorkMs;
     }
 
     @Override
     public long getCheckFrequencySeconds() {
-        throw new RuntimeException("Not Implemented");
+        return checkFrequencySeconds;
     }
 
     @Override
     public int getPoolSize() {
-        throw new RuntimeException("Not Implemented");
+        return poolSize;
     }
 
     @Override
-    public String getPumpControlPin() {
-        throw new RuntimeException("Not Implemented");
+    public Pin getPumpControlPin() {
+        return pumpControlPin;
     }
 
     @Override
     public String getCalendarId() {
-        throw new RuntimeException("Not Implemented");
+        return calendarId;
     }
 
     @Override
     public String getEventId() {
-        throw new RuntimeException("Not Implemented");
+        return eventId;
     }
 
     @Override
     public String getGoogleClientSecretJsonPath() {
-        throw new RuntimeException("Not Implemented");
+        return googleClientSecretJsonPath;
     }
 
     @Override
     public String getGoogleAppName() {
-        throw new RuntimeException("Not Implemented");
+        return googleAppName;
     }
 }

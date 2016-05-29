@@ -38,14 +38,14 @@ public class PirrigationServiceModule extends AbstractModule {
 
     @Provides
     public Pump providePump(Sleeper sleeper, PirrigationServiceConfig config, GpioController controller) {
-        //return new StubPump(sleeper);
-        return new PiPump(controller, RaspiPin.getPinByName(config.getPumpControlPin()), sleeper);
+        return new StubPump(sleeper);
+        //return new PiPump(controller, config.getPumpControlPin(), sleeper);
     }
 
     @Provides
     public GpioController provideGpioController() {
-        //return Mockito.mock(GpioController.class);
-        return GpioFactory.getInstance();
+        return Mockito.mock(GpioController.class);
+        //return GpioFactory.getInstance();
     }
 
     @Provides

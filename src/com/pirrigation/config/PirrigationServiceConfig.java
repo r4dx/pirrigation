@@ -1,5 +1,7 @@
 package com.pirrigation.config;
 
+import com.pi4j.io.gpio.Pin;
+
 /**
  * Created by r4dx on 09.05.2016.
  */
@@ -10,7 +12,7 @@ public interface PirrigationServiceConfig {
 
     int getPoolSize();
 
-    String getPumpControlPin();
+    Pin getPumpControlPin();
 
     String getCalendarId();
 
