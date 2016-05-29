@@ -5,7 +5,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.RaspiPin;
 import com.pirrigation.PirrigationService;
 import com.pirrigation.config.*;
 import com.pirrigation.event.Event;
@@ -64,14 +63,14 @@ public class PirrigationServiceModule extends AbstractModule {
 
     @Provides
     public Pump providePump(Sleeper sleeper, PumpConfig config, GpioController controller) {
-        return new StubPump(sleeper);
-        //return new PiPump(controller, config.getControlPin(), sleeper);
+        //return new StubPump(sleeper);
+        return new PiPump(controller, config.getControlPin(), sleeper);
     }
 
     @Provides
     public GpioController provideGpioController() {
-        return Mockito.mock(GpioController.class);
-        //return GpioFactory.getInstance();
+        //return Mockito.mock(GpioController.class);
+        return GpioFactory.getInstance();
     }
 
     @Provides
