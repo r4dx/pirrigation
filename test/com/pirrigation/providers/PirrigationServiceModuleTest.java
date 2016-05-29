@@ -2,18 +2,22 @@ package com.pirrigation.providers;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
-import com.pirrigation.config.PirrigationServiceConfig;
+import com.pirrigation.config.PumpConfig;
+import com.pirrigation.config.SchedulerConfig;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.Pump;
+import com.typesafe.config.Config;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import java.time.Duration;
 import java.util.function.Supplier;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by r4dx on 09.05.2016.
@@ -28,19 +32,27 @@ public class PirrigationServiceModuleTest {
         module.configure();
     }
 
-    @Test
-    public void testProvidePirrigationServiceConfigDoesNotThrowExceptions() {
-        module.providePirrigationServiceConfig();
-    }
 
     @Test
     public void testProvidePirrigationServiceDoesNotThrowExceptions() {
-        module.providePirrigationService(mock(PirrigationServiceConfig.class), mock(Pump.class), mock(Supplier.class));
+        SchedulerConfig config = mock(SchedulerConfig.class);
+        when(config.getCheckFrequency()).thenReturn(Duration.ofMillis(1));
+        module.providePirrigationService(config, mock(PumpConfig.class), mock(Pump.class), mock(Supplier.class));
+    }
+
+    @Test
+    public void testProvideSchedulerConfigDoesNotThrowExceptions() {
+        module.provideSchedulerConfig(mock(Config.class));
+    }
+
+    @Test
+    public void testProvidePumpConfigDoesNotThrowExceptions() {
+        module.providePumpConfig(mock(Config.class));
     }
 
     @Test
     public void testProvidePumpDoesNotThrowExceptions() {
-        module.providePump(mock(Sleeper.class), mock(PirrigationServiceConfig.class), mock(GpioController.class));
+        module.providePump(mock(Sleeper.class), mock(PumpConfig.class), mock(GpioController.class));
     }
 
     @Test

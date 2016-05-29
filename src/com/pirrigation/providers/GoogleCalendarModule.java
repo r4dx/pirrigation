@@ -8,7 +8,7 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.pirrigation.config.PirrigationServiceConfig;
+import com.pirrigation.config.GoogleCalendarConfig;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,19 +26,20 @@ public class GoogleCalendarModule extends AbstractModule {
     }
 
     @Provides
-    public Calendar provideCalendar(PirrigationServiceConfig config) throws GeneralSecurityException, IOException {
-        try (InputStream is = new FileInputStream(config.getGoogleClientSecretJsonPath())) {
+    public Calendar provideCalendar(GoogleCalendarConfig config) throws GeneralSecurityException, IOException {
+        try (InputStream is = new FileInputStream(config.getSecretJsonPath())) {
             return getCalendarService(config, is);
         } catch (GeneralSecurityException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private Calendar getCalendarService(PirrigationServiceConfig config, InputStream clientSecretJson) throws GeneralSecurityException, IOException {
+    private Calendar getCalendarService(GoogleCalendarConfig config,
+                                        InputStream clientSecretJson) throws GeneralSecurityException, IOException {
         Calendar.Builder builder = new Calendar.Builder(
                 GoogleNetHttpTransport.newTrustedTransport(), JacksonFactory.getDefaultInstance(),
                 getCredential(clientSecretJson));
-        return builder.setApplicationName(config.getGoogleAppName()).build();
+        return builder.setApplicationName(config.getAppName()).build();
     }
 
     private Credential getCredential(InputStream clientSecretJson) throws IOException {

@@ -1,8 +1,9 @@
 package com.pirrigation.providers;
 
 import com.google.api.services.calendar.Calendar;
-import com.pirrigation.config.PirrigationServiceConfig;
+import com.pirrigation.config.GoogleCalendarConfig;
 import com.pirrigation.event.Event;
+import com.typesafe.config.Config;
 import org.junit.Test;
 
 import java.util.function.Supplier;
@@ -17,7 +18,12 @@ public class EventModuleTest {
 
     @Test
     public void testProvideEventSupplierDoesNotThrowException() {
-        module.provideEventSupplier(mock(PirrigationServiceConfig.class), mock(Calendar.class));
+        module.provideEventSupplier(mock(GoogleCalendarConfig.class), mock(Calendar.class));
+    }
+
+    @Test
+    public void testProvideGoogleCalendarConfigDoesNotThrowException() {
+        module.provideGoogleCalendarConfig(mock(Config.class));
     }
 
     @Test
@@ -27,7 +33,7 @@ public class EventModuleTest {
 
     @Test
     public void testGetEventDoesNotThrowException() {
-        Supplier<Event> supplier = module.provideEventSupplier(mock(PirrigationServiceConfig.class),
+        Supplier<Event> supplier = module.provideEventSupplier(mock(GoogleCalendarConfig.class),
                 mock(Calendar.class));
         supplier.get();
     }

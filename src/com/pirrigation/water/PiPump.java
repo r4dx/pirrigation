@@ -3,6 +3,8 @@ package com.pirrigation.water;
 import com.pi4j.io.gpio.*;
 import com.pirrigation.scheduler.Sleeper;
 
+import java.time.Duration;
+
 /**
  * Created by r4dx on 01.05.2016.
  */
@@ -17,10 +19,10 @@ public class PiPump implements Pump {
     }
 
     @Override
-    public void start(long workMs) {
+    public void start(Duration workDuration) {
         pumpPin.high();
         try {
-            sleeper.sleep(workMs);
+            sleeper.sleep(workDuration.toMillis());
         }
         finally {
             pumpPin.low();

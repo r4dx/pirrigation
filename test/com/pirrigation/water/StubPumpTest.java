@@ -3,6 +3,8 @@ package com.pirrigation.water;
 import com.pirrigation.scheduler.Sleeper;
 import org.junit.Test;
 
+import java.time.Duration;
+
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -14,8 +16,8 @@ public class StubPumpTest {
     public void testStarted() {
         Sleeper sleeper = mock(Sleeper.class);
         Pump pump = new StubPump(sleeper);
-        final long waitMs = 1000;
-        pump.start(waitMs);
-        verify(sleeper).sleep(waitMs);
+        final Duration waitDuration = Duration.ofMillis(1000);
+        pump.start(waitDuration);
+        verify(sleeper).sleep(waitDuration.toMillis());
     }
 }
