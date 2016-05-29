@@ -6,8 +6,7 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pirrigation.PirrigationService;
-import com.pirrigation.config.PirrigationServiceConfig;
-import com.pirrigation.config.PirrigationServiceConfigImpl;
+import com.pirrigation.config.*;
 import com.pirrigation.event.Event;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.PiPump;
@@ -29,8 +28,13 @@ public class PirrigationServiceModule extends AbstractModule {
     }
 
     @Provides
-    public PirrigationServiceConfig providePirrigationServiceConfig(Config hoconConfig) {
-        return new PirrigationServiceConfigImpl(hoconConfig);
+    public SchedulerConfig provideSchedulerConfig(Config hoconConfig) {
+        return new SchedulerConfigImpl(hoconConfig);
+    }
+
+    @Provides
+    public PumpConfig providePumpConfig(Config hoconConfig) {
+        return new PumpConfigImpl(hoconConfig);
     }
 
     @Provides
@@ -39,15 +43,17 @@ public class PirrigationServiceModule extends AbstractModule {
     }
 
     @Provides
-    public PirrigationService providePirrigationService(PirrigationServiceConfig config, Pump pump,
+    public PirrigationService providePirrigationService(SchedulerConfig schedulerConfig,
+                                                        PumpConfig pumpConfig,
+                                                        Pump pump,
                                                         Supplier<Event> eventSupplier) {
-        return new PirrigationService(config, pump, eventSupplier);
+        return new PirrigationService(schedulerConfig, pumpConfig, pump, eventSupplier);
     }
 
     @Provides
-    public Pump providePump(Sleeper sleeper, PirrigationServiceConfig config, GpioController controller) {
+    public Pump providePump(Sleeper sleeper, PumpConfig config, GpioController controller) {
         return new StubPump(sleeper);
-        //return new PiPump(controller, config.getPumpControlPin(), sleeper);
+        //return new PiPump(controller, config.getControlPin(), sleeper);
     }
 
     @Provides

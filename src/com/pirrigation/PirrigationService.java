@@ -1,6 +1,7 @@
 package com.pirrigation;
 
-import com.pirrigation.config.PirrigationServiceConfig;
+import com.pirrigation.config.PumpConfig;
+import com.pirrigation.config.SchedulerConfig;
 import com.pirrigation.event.Event;
 import com.pirrigation.scheduler.EventsScheduler;
 import com.pirrigation.scheduler.GoogleEventsScheduledFetcher;
@@ -27,13 +28,16 @@ public class PirrigationService implements Closeable {
 
     private final EventsScheduler eventsScheduler;
     private final GoogleEventsScheduledFetcher fetcher;
-    private final PirrigationServiceConfig config;
+    private final SchedulerConfig schedulerConfig;
+    private final PumpConfig pumpConfig;
     private Supplier<Event> eventSupplier;
 
-    public PirrigationService(PirrigationServiceConfig config, Pump pump, Supplier<Event> eventSupplier) {
-        this.config = config;
+    public PirrigationService(SchedulerConfig schedulerConfig, PumpConfig pumpConfig,
+                              Pump pump, Supplier<Event> eventSupplier) {
+        this.schedulerConfig = schedulerConfig;
+        this.pumpConfig = pumpConfig;
         this.eventSupplier = eventSupplier;
-        this.scheduledService = Executors.newScheduledThreadPool(config.getPoolSize());
+        this.scheduledService = Executors.newScheduledThreadPool(schedulerConfig.getPoolSize());
         this.pump = pump;
         eventsScheduler = constructScheduler();
         fetcher = constructFetcher();
@@ -41,7 +45,7 @@ public class PirrigationService implements Closeable {
 
     private GoogleEventsScheduledFetcher constructFetcher() {
         return new GoogleEventsScheduledFetcher(eventSupplier,
-                scheduledService, config.getCheckFrequency().getSeconds(), TimeUnit.SECONDS,
+                scheduledService, schedulerConfig.getCheckFrequency().getSeconds(), TimeUnit.SECONDS,
                 event -> {
                     logger.info("onFetchEvent: {}", event);
                     eventsScheduler.schedule(event);
@@ -54,7 +58,7 @@ public class PirrigationService implements Closeable {
                 event -> {
                     try {
                         logger.info("onEvent: {}", event);
-                        pump.start(config.getPumpWorkDuration());
+                        pump.start(pumpConfig.getWorkDuration());
                     }
                     catch (Throwable e) {
                         logger.error("Problems while pumping water", e);
@@ -66,8 +70,6 @@ public class PirrigationService implements Closeable {
 
     public void serve() {
         logger.info("Starting service");
-        logger.info("Configuration:" + config.toString());
-
         fetcher.schedule();
     }
 

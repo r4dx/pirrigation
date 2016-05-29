@@ -15,59 +15,96 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static org.mockito.Mockito.mock;
 
 /**
  * Created by r4dx on 29.05.2016.
  */
 public class PirrigationServiceConfigImplTest {
 
-    private PirrigationServiceConfig config;
+    private PumpConfig pumpConfig;
+    private GoogleCalendarConfig googleCalendarConfig;
 
     @Before
     public void setup() {
-        final String conf = "{\n" +
-                "  \"pumpWorkDuration\": \"1s\",\n" +
-                "  \"checkFrequency\": \"2s\",\n" +
-                "  \"poolSize\": 3,\n" +
-                "  \"pumpControlPin\": \"GPIO 25\",\n" +
-                "  \"calendarId\": \"calendarId\",\n" +
-                "  \"eventId\": \"eventId\",\n" +
-                "  \"googleClientSecretJsonPath\": \"googleClientSecretJsonPath\",\n" +
-                "  \"googleAppName\": \"googleAppName\"\n" +
-                "}";
+        final String conf =
+                "{\n" +
+                        "  \"pump\": {\n" +
+                        "    \"workDuration\": \"1s\",\n" +
+                        "    \"controlPin\": \"GPIO 25\"\n" +
+                        "  },\n" +
+                        "\n" +
+                        "  \"googleCalendar\": {\n" +
+                        "    \"calendarId\": \"calendarId\",\n" +
+                        "    \"eventId\": \"eventId\",\n" +
+                        "    \"secretJsonPath\": \"secretJsonPath\",\n" +
+                        "    \"appName\": \"appName\",\n" +
+                        "\n" +
+                        "    \"scheduler\": {\n" +
+                        "      \"checkFrequency\": \"1s\",\n" +
+                        "      \"poolSize\": 1\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}";
 
         Config hoconConfig = ConfigFactory.parseString(conf);
-        config = new PirrigationServiceConfigImpl(hoconConfig);
+        pumpConfig = new PumpConfigImpl(hoconConfig);
+        googleCalendarConfig = new GoogleCalendarConfigImpl(hoconConfig);
     }
 
     @Test
-    public void test() {
-        Assert.assertEquals("calendarId", config.getCalendarId());
-        Assert.assertEquals("eventId", config.getEventId());
-        Assert.assertEquals("googleAppName", config.getGoogleAppName());
-        Assert.assertEquals("googleClientSecretJsonPath", config.getGoogleClientSecretJsonPath());
-        Assert.assertEquals(RaspiPin.GPIO_25, config.getPumpControlPin());
-        Assert.assertEquals(Duration.ofSeconds(1), config.getPumpWorkDuration());
-        Assert.assertEquals(Duration.ofSeconds(2), config.getCheckFrequency());
-        Assert.assertEquals(3, config.getPoolSize());
+    public void testPump() {
+        Assert.assertEquals(Duration.ofSeconds(1), pumpConfig.getWorkDuration());
+        Assert.assertEquals(RaspiPin.GPIO_25, pumpConfig.getControlPin());
     }
 
     @Test
-    public void testToString() {
-        for (Field currentField : getAllFields(PirrigationServiceConfigImpl.class,
-                field -> field.getName().startsWith("com.pirrigation.") && !field.getName().startsWith("$"))) {
-            Assert.assertTrue(config.toString().contains(currentField.getName()));
-        }
+    public void testGoogleCalendar() {
+        Assert.assertEquals("eventId", googleCalendarConfig.getEventId());
+        Assert.assertEquals("appName", googleCalendarConfig.getAppName());
+        Assert.assertEquals("calendarId", googleCalendarConfig.getCalendarId());
+        Assert.assertEquals("secretJsonPath", googleCalendarConfig.getSecretJsonPath());
+    }
+
+    @Test
+    public void testScheduledConfig() {
+        Assert.assertEquals(Duration.ofSeconds(1), googleCalendarConfig.getSchedulerConfig().getCheckFrequency());
+        Assert.assertEquals(1, googleCalendarConfig.getSchedulerConfig().getPoolSize());
+    }
+
+    @Test
+    public void testPumpConfigToString() {
+        testToString(PumpConfigImpl.class, pumpConfig);
+    }
+
+    @Test
+    public void testGoogleCalendarConfigToString() {
+        testToString(GoogleCalendarConfigImpl.class, googleCalendarConfig);
+    }
+
+    @Test
+    public void testSchedulerConfigToString() {
+        testToString(SchedulerConfigImpl.class, googleCalendarConfig.getSchedulerConfig());
+    }
+
+    private void testToString(Class klass, Object obj) {
+        List<Field> fields = getAllFields(klass,
+                field -> field.getDeclaringClass().getName().startsWith("com.pirrigation.") &&
+                        !field.getName().startsWith("$"));
+
+        for (Field currentField : fields)
+            Assert.assertTrue(obj.toString().contains(currentField.getName()));
     }
 
     private List<Field> getAllFields(Class klass, Predicate<Field> filter) {
         List<Field> fields = new ArrayList<>();
         fields.addAll(Arrays.asList(klass.getDeclaredFields()).stream().filter(filter).collect(Collectors.toList()));
+
+        List<Field> fieldsToAdd = new ArrayList<>();
         for (Field field : fields)
             if (filter.test(field))
-                fields.addAll(getAllFields(field.getType(), filter));
+                fieldsToAdd.addAll(getAllFields(field.getClass(), filter));
 
+        fields.addAll(fieldsToAdd);
         return fields;
     }
 

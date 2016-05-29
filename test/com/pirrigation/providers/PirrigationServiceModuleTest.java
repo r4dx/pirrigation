@@ -2,7 +2,8 @@ package com.pirrigation.providers;
 
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
-import com.pirrigation.config.PirrigationServiceConfig;
+import com.pirrigation.config.PumpConfig;
+import com.pirrigation.config.SchedulerConfig;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.Pump;
 import com.typesafe.config.Config;
@@ -31,21 +32,17 @@ public class PirrigationServiceModuleTest {
         module.configure();
     }
 
-    @Test
-    public void testProvidePirrigationServiceConfigDoesNotThrowExceptions() {
-        module.providePirrigationServiceConfig(mock(Config.class));
-    }
 
     @Test
     public void testProvidePirrigationServiceDoesNotThrowExceptions() {
-        PirrigationServiceConfig config = mock(PirrigationServiceConfig.class);
+        SchedulerConfig config = mock(SchedulerConfig.class);
         when(config.getCheckFrequency()).thenReturn(Duration.ofMillis(1));
-        module.providePirrigationService(config, mock(Pump.class), mock(Supplier.class));
+        module.providePirrigationService(config, mock(PumpConfig.class), mock(Pump.class), mock(Supplier.class));
     }
 
     @Test
     public void testProvidePumpDoesNotThrowExceptions() {
-        module.providePump(mock(Sleeper.class), mock(PirrigationServiceConfig.class), mock(GpioController.class));
+        module.providePump(mock(Sleeper.class), mock(PumpConfig.class), mock(GpioController.class));
     }
 
     @Test
