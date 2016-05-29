@@ -5,6 +5,7 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pirrigation.config.PirrigationServiceConfig;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.Pump;
+import com.typesafe.config.Config;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
@@ -30,7 +31,7 @@ public class PirrigationServiceModuleTest {
 
     @Test
     public void testProvidePirrigationServiceConfigDoesNotThrowExceptions() {
-        module.providePirrigationServiceConfig();
+        module.providePirrigationServiceConfig(mock(Config.class));
     }
 
     @Test

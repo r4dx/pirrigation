@@ -7,14 +7,17 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.gpio.RaspiPin;
 import com.pirrigation.PirrigationService;
 import com.pirrigation.config.PirrigationServiceConfig;
-import com.pirrigation.config.PirrigationServiceConfigStubImpl;
+import com.pirrigation.config.PirrigationServiceConfigImpl;
 import com.pirrigation.event.Event;
 import com.pirrigation.scheduler.Sleeper;
 import com.pirrigation.water.PiPump;
 import com.pirrigation.water.Pump;
 import com.pirrigation.water.StubPump;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.util.function.Supplier;
 
 /**
@@ -26,8 +29,13 @@ public class PirrigationServiceModule extends AbstractModule {
     }
 
     @Provides
-    public PirrigationServiceConfig providePirrigationServiceConfig() {
-        return new PirrigationServiceConfigStubImpl();
+    public PirrigationServiceConfig providePirrigationServiceConfig(Config hoconConfig) {
+        return new PirrigationServiceConfigImpl(hoconConfig);
+    }
+
+    @Provides
+    public Config provideHoconConfig() {
+        return ConfigFactory.parseFile(new File("conf/pirrigation.conf"));
     }
 
     @Provides
