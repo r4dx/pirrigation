@@ -15,11 +15,27 @@ This is a home project to create simple irrigation system based on Raspberry Pi.
 
 ## Configuration ##
 Here's example /usr/local/pirrigation/conf/pirrigation.conf:
-    check_period_seconds = 1440 # once a day
-    calendar_eventId = water
-    pump_gpio = 25
-    pump_delay_seconds = 5
-    notify_email = 'test@test.com'
+
+```
+{
+  "pump": {
+    "workDuration": "10s",
+    "controlPin": "GPIO 25"
+  },
+
+  "googleCalendar": {
+    "calendarId": "magicforesterrors@gmail.com",
+    "eventId": "l3unmldrkj34rsg3danliuocpc",
+    "secretJsonPath": "conf/google_client_secret.json",
+    "appName": "Pirrigation",
+
+    "scheduler": {
+      "checkFrequency": "30s",
+      "poolSize": 10
+    }
+  }
+}
+```
 
 ## Running Instruction ##
 1. [ Create SSH ](http://www.linuxproblem.org/art_9.html) key and copy public key on Pi
