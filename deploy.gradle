@@ -1,4 +1,5 @@
 apply plugin: "org.hidetake.ssh"
+apply plugin: 'nebula.deb'
 
 ssh.settings {
     knownHosts = allowAnyHosts
@@ -12,13 +13,37 @@ remotes {
     }
 }
 
-task deploy(dependsOn: jar) << {
+task deb(type: Deb) {
+    packageName = 'pirrigation'
+    release = 1
+    postInstall('update-rc.d pirrigation defaults')
+    def destinationFolder = '/usr/local/pirrigation/'
+    into destinationFolder
+
+    from (jar.destinationDir.getAbsolutePath()) {
+        into ''
+    }
+
+    from ('scripts') {
+        into 'scripts'
+        fileMode 0550
+    }
+
+    link('/etc/init.d/pirrigation', destinationFolder + 'scripts/pirrigation')
+    link(destinationFolder + 'pirrigation.jar', destinationFolder + jar.archiveName)
+}
+deb.dependsOn jar
+
+task deploy() << {
     ssh.run {
         session(remotes.pi) {
-            def targetDir = './' + jar.baseName
-            execute 'mkdir -p ' + targetDir
-            put new File(jar.destinationDir, "/"), targetDir
-            execute 'cd ' + targetDir + ';sudo java -jar ' + jar.archiveName
+            put deb.getArchivePath(), '.'
+            execute 'sudo service pirrigation stop', ignoreError: true
+            execute 'sudo dpkg -r pirrigation', ignoreError: true
+            execute 'sudo dpkg -i ' + deb.getArchiveName()
+            execute 'sudo update-rc.d pirrigation enable'
+            execute 'sudo service pirrigation start'
         }
     }
 }
+deploy.dependsOn deb

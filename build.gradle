@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'application'
+
 apply from: 'dependencies.gradle'
 apply from: 'coverage.gradle'
 
@@ -11,12 +12,12 @@ buildscript {
   }
   dependencies {
     classpath "org.hidetake:gradle-ssh-plugin:2.0.0"
+    classpath 'com.netflix.nebula:gradle-ospackage-plugin:3.6.1'
   }
 }
 
-apply from: 'deploy.gradle'
-
 mainClassName = "com.pirrigation.PirrigationApp"
+version = '1.0.0'
 
 jar {
     manifest {
@@ -27,13 +28,16 @@ jar {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
     baseName = "pirr"
-    version = '0.0.1'
-    copy {
-        from 'conf/'
-	into 'build/libs/conf/'
+    doLast {
+        copy {
+            from 'conf/'
+            into destinationDir.getAbsolutePath() + '/conf/'
+        }
     }
 }
 jar.dependsOn jacocoTestReport
+
+apply from: 'deploy.gradle'
 
 run {
     main = "$mainClassName"

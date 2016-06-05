@@ -1,0 +1,44 @@
+#!/bin/sh
+# Start/stop the pirrigation daemon.
+#
+### BEGIN INIT INFO
+# Provides:          pirrigation
+# Short-Description: Starts water pump depending on schedule
+# Description:       See more for details: https://bitbucket.org/r4dx/pirrigation
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+### END INIT INFO
+
+DESC="pirrigation daemon"
+NAME=pirrigation
+DAEMON="/usr/local/pirrigation/scripts/pirrigation.sh"
+PIDFILE=/var/run/pirrigation.pid
+SCRIPTNAME=/etc/init.d/"$NAME"
+
+. /lib/lsb/init-functions
+
+case "$1" in
+start)  log_daemon_msg "Starting pirrigation" "pirrigation"
+        start_daemon $DAEMON $EXTRA_OPTS
+        log_end_msg $?
+        ;;
+stop)   log_daemon_msg "Stopping pirrigation" "pirrigation"
+        killproc -p $PIDFILE $DAEMON
+        RETVAL=$?
+        [ $RETVAL -eq 0 ] && [ -e "$PIDFILE" ] && rm -f $PIDFILE
+        log_end_msg $RETVAL
+        ;;
+restart) log_daemon_msg "Restarting pirrigation" "pirrigation"
+        $0 stop
+        $0 start
+        ;;
+status)
+        status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+        ;;
+*)      log_action_msg "Usage: /etc/init.d/pirrigation {start|stop|status|restart}"
+        exit 2
+        ;;
+esac
+exit 0
