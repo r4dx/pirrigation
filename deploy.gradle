@@ -17,6 +17,7 @@ task deb(type: Deb) {
     packageName = 'pirrigation'
     release = 1
     postInstall('update-rc.d pirrigation defaults')
+    postInstall('update-rc.d pirrigation enable')
     def destinationFolder = '/usr/local/pirrigation/'
     into destinationFolder
 
@@ -41,7 +42,6 @@ task deploy() << {
             execute 'sudo service pirrigation stop', ignoreError: true
             execute 'sudo dpkg -r pirrigation', ignoreError: true
             execute 'sudo dpkg -i ' + deb.getArchiveName()
-            execute 'sudo update-rc.d pirrigation enable'
             execute 'sudo service pirrigation start'
         }
     }
