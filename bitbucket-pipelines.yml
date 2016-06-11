@@ -4,4 +4,4 @@ pipelines:
   default:
     - step:
         script:
-          - gradle clean jacocoReport
+          - gradle clean jacocoTestReport
