@@ -6,7 +6,7 @@ Current version is 1.0.0
 This is a home project to create simple irrigation system based on Raspberry Pi.
 
 ## Prerequisites ##
-1. Google calendar account and configured event (see [Google calendar configuration] for details)
+1. Google calendar account and configured event (see Calendar Config section for details)
 2. Raspberry pi
 3. gradle to build and deploy
 
