@@ -33,7 +33,7 @@ task deb(type: Deb) {
     link('/etc/init.d/pirrigation', destinationFolder + 'scripts/pirrigation')
     link(destinationFolder + 'pirrigation.jar', destinationFolder + jar.archiveName)
 }
-deb.dependsOn jar
+deb.dependsOn bootRepackage
 
 task deploy() << {
     ssh.run {
