@@ -3,6 +3,7 @@ package com.pirrigation.scheduler;
 import com.pirrigation.event.Event;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -85,6 +86,20 @@ public class EventsSchedulerTest {
         eventsScheduler.schedule(event2);
         Assert.assertEquals(2, rescheduleCounter.get());
         Assert.assertEquals(0, events.size());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCannotRescheduleRunningTask() {
+        Event event1 = eventMockProvider.mockEvent();
+        Event event2 = eventMockProvider.mockEvent();
+        EventsScheduler eventsScheduler = getScheduler(
+                event -> { },
+                (time, seconds) ->  {},
+                executorsProvider::mockRunningFuture,
+                1);
+
+        eventsScheduler.schedule(event1);
+        eventsScheduler.schedule(event2);
     }
 
     @Test

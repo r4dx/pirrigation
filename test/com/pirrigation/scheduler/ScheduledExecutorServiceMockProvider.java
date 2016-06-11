@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -29,14 +30,26 @@ class ScheduledExecutorServiceMockProvider {
     }
 
     public ScheduledFuture mockFuture() {
-        ScheduledFuture result = mock(ScheduledFuture.class);
+        ScheduledFuture result = getMockedFuture();
         when(result.cancel(anyBoolean())).thenReturn(true);
         return result;
     }
 
-    public ScheduledFuture mockFutureThatCannotBeCancelled() {
+    private ScheduledFuture getMockedFuture() {
         ScheduledFuture result = mock(ScheduledFuture.class);
+        when(result.getDelay(any())).thenReturn(1L);
+        return result;
+    }
+
+    public ScheduledFuture mockFutureThatCannotBeCancelled() {
+        ScheduledFuture result = getMockedFuture();
         when(result.cancel(anyBoolean())).thenReturn(false);
+        return result;
+    }
+
+    public ScheduledFuture mockRunningFuture() {
+        ScheduledFuture result = mock(ScheduledFuture.class);
+        when(result.getDelay(any())).thenReturn(0L);
         return result;
     }
 }
