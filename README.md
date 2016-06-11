@@ -1,17 +1,19 @@
 # README #
-N.B. This is still under development.
+## Version ##
+Current version is 1.0.0
 
 ## Abstract ##
 This is a home project to create simple irrigation system based on Raspberry Pi.
 
 ## Prerequisites ##
-1. Google event should be 0 minutes long
+1. Google calendar account and configured event (see Calendar Config section for details)
+2. Raspberry pi
+3. gradle to build and deploy
 
 ## Method ##
-1. Runs as a service
-2. Checks google calendar in order to get next date for 'calendar_eventId' once in a 'check_period_seconds' to reschedule next watering
+1. Runs as a service debian package is build in deb task (see deploy.gradle)
+2. Checks google calendar in order to get next date for 'calendar_eventId' once in a 'check_period_seconds' to reschedule watering
 3. Sets 'pump_gpio' port in a high mode for 'pump_delay_seconds' when watering happens
-4. Sends email to 'notify_email' each time watering occurs
 
 ## Configuration ##
 Here's example /usr/local/pirrigation/conf/pirrigation.conf:
@@ -40,6 +42,7 @@ Here's example /usr/local/pirrigation/conf/pirrigation.conf:
 ## Running Instruction ##
 1. [ Create SSH ](http://www.linuxproblem.org/art_9.html) key and copy public key on Pi
 2. Put private key in ssh_keys/pi_rsa
+3. Configure host and user variables in deploy.gradle
 3. Run gradle deploy
 
 ## Google calendar configuration ##
@@ -47,8 +50,9 @@ Here's example /usr/local/pirrigation/conf/pirrigation.conf:
 2. Create service account https://console.developers.google.com/permissions/serviceaccounts?project=PROJECT_ID
 3. Copy service account key to conf folder
 4. Share calendar with service account using https://calendar.google.com. Service account email can be found in https://console.developers.google.com/permissions/serviceaccounts?project=PROJECT_ID
-5. N.B. Calendar id is account email now!
+5. N.B. Calendar id is account email for some reason now (not primary)!
 6. Find event id using https://developers.google.com/google-apps/calendar/v3/reference/events/list with q as a parameter
+7. Event must be 0 minutes long to work properly
 
 ## Tested ##
 Tested on Raspberry Pi 2 Model B.
