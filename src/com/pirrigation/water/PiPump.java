@@ -10,6 +10,8 @@ import java.time.Duration;
  */
 public class PiPump implements Pump {
 
+    private volatile boolean processing;
+
     private final Sleeper sleeper;
     private final GpioPinDigitalOutput pumpPin;
 
@@ -20,12 +22,17 @@ public class PiPump implements Pump {
 
     @Override
     public void start(Duration workDuration) {
+        if (processing)
+            throw new IllegalStateException("Already pumping");
+
+        processing = true;
         pumpPin.high();
         try {
             sleeper.sleep(workDuration.toMillis());
         }
         finally {
             pumpPin.low();
+            processing = false;
         }
     }
 }
