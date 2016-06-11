@@ -44,11 +44,15 @@ public class EventsScheduler implements Closeable {
         if (delayNanos <= 0)
             throw new IllegalArgumentException("Next event occurs in past");
 
-        if (eventTriggerFuture != null && !eventTriggerFuture.cancel(true))
+        if (eventTriggerFuture != null && (isFutureRunning(eventTriggerFuture) || !eventTriggerFuture.cancel(true)))
             throw new IllegalStateException("Can't reschedule");
 
         eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event),
                 delayNanos, delayNanos, TimeUnit.NANOSECONDS);
+    }
+
+    private boolean isFutureRunning(ScheduledFuture<?> future) {
+        return future.getDelay(TimeUnit.NANOSECONDS) <= 0;
     }
 
     private long getDelayNanos(ZonedDateTime dateTime) {
