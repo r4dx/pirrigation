@@ -10,8 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.*;
 
 import static org.mockito.Mockito.*;
@@ -23,13 +21,14 @@ public class PiPumpTest {
 
     private final Pin pin = RaspiPin.GPIO_25;
     private GpioPinDigitalOutput outputPin;
+    private GpioController gpioController;
     private PiPump pump;
     private Sleeper sleeper;
 
     @Before
     public void setup() {
         outputPin = mock(GpioPinDigitalOutput.class);
-        GpioController gpioController = mock(GpioController.class);
+        gpioController = mock(GpioController.class);
         when(gpioController.provisionDigitalOutputPin(pin)).thenReturn(outputPin);
         sleeper = mock(Sleeper.class);
 
@@ -45,24 +44,22 @@ public class PiPumpTest {
         verify(outputPin).low();
     }
 
-    @Test()
+    @Test
     public void testAlreadyPumping() throws InterruptedException {
+        // N.B. Using real sleeper here to make sure thread will be blocked for sure
+        pump = new PiPump(gpioController, pin, Sleeper.DEFAULT);
         ExecutorService service = Executors.newFixedThreadPool(2);
-        List<Callable<Void>> callables = new ArrayList<>(2);
         final Semaphore semaphore = new Semaphore(1);
         semaphore.acquire();
         for (int i = 0; i < 2; i++)
-            callables.add(() -> {
+            service.submit(() -> {
                 try {
-                    pump.start(Duration.ofMillis(100));
-                }
-                catch (IllegalStateException e) {
+                    pump.start(Duration.ofMillis(1000));
+                } catch (IllegalStateException e) {
                     semaphore.release();
                 }
-                return null;
             });
-        service.invokeAll(callables);
-        Assert.assertTrue(semaphore.tryAcquire(1, TimeUnit.SECONDS));
+        Assert.assertTrue(semaphore.tryAcquire(3, TimeUnit.SECONDS));
     }
 
     @Test(expected = RuntimeException.class)
