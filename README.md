@@ -11,7 +11,7 @@ This is a home project to create simple irrigation system based on Raspberry Pi.
 3. gradle to build and deploy
 
 ## Method ##
-1. Runs as a service debian package is build in deb task (see deploy.gradle)
+1. Runs as a service, - debian package is build in deb task (see deploy.gradle)
 2. Checks google calendar in order to get next date for 'calendar_eventId' once in a 'check_period_seconds' to reschedule watering
 3. Sets 'pump_gpio' port in a high mode for 'pump_delay_seconds' when watering happens
 
