@@ -12,8 +12,8 @@ This is a home project to create simple irrigation system based on Raspberry Pi.
 
 ## Method ##
 1. Runs as a service, - debian package is build in deb task (see deploy.gradle)
-2. Checks google calendar in order to get next date for 'calendar_eventId' once in a 'check_period_seconds' to reschedule watering
-3. Sets 'pump_gpio' port in a high mode for 'pump_delay_seconds' when watering happens
+2. Checks google calendar in order to get next date time for 'googleCalendar.eventId' once in a 'scheduler.checkFrequency' to reschedule watering
+3. Sets 'pump.controlPin' port in a high mode for 'pump.workDuration' in order for watering to occur
 
 ## Configuration ##
 Here's example /usr/local/pirrigation/conf/pirrigation.conf:
