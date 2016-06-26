@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,9 @@ public class PirrigationService implements Closeable {
     private final PumpConfig pumpConfig;
     private Supplier<Event> eventSupplier;
 
+    private Event nextEvent;
+    private ZonedDateTime lastOccurrenceTime;
+
     public PirrigationService(SchedulerConfig schedulerConfig, PumpConfig pumpConfig,
                               Pump pump, Supplier<Event> eventSupplier) {
         this.schedulerConfig = schedulerConfig;
@@ -47,7 +51,8 @@ public class PirrigationService implements Closeable {
         return new GoogleEventsScheduledFetcher(eventSupplier,
                 scheduledService, schedulerConfig.getCheckFrequency().getSeconds(), TimeUnit.SECONDS,
                 event -> {
-                    logger.info("onFetchEvent: {}", event);
+                    this.nextEvent = event;
+                    logger.debug("onFetchEvent: {}", event);
                     eventsScheduler.schedule(event);
                 },
                 this::onErrorConsumer);
@@ -58,13 +63,14 @@ public class PirrigationService implements Closeable {
                 event -> {
                     try {
                         logger.info("onEvent: {}", event);
+                        lastOccurrenceTime = ZonedDateTime.now();
                         pump.start(pumpConfig.getWorkDuration());
                     }
                     catch (Throwable e) {
                         logger.error("Problems while pumping water", e);
                     }
                 },
-                (newTime, nanos) -> logger.info("Rescheduled, next event will be triggered at {} ({}s from now)",
+                (newTime, nanos) -> logger.info("Rescheduled, next nextEvent will be triggered at {} ({}s from now)",
                         newTime, TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)));
     }
 
@@ -73,8 +79,16 @@ public class PirrigationService implements Closeable {
         fetcher.schedule();
     }
 
+    public Event getNextEvent() {
+        return nextEvent;
+    }
+
+    public ZonedDateTime getLastOccurrenceTime() {
+        return lastOccurrenceTime;
+    }
+
     private void onErrorConsumer(Throwable e) {
-        logger.error("Error while scheduling event", e);
+        logger.error("Error while scheduling nextEvent", e);
     }
 
     @Override
