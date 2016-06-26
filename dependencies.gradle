@@ -19,6 +19,10 @@ dependencies {
     compile('com.fasterxml.jackson.core:jackson-databind:2.7.4') {
         force = true;
     }
+    // Supports optional
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.6.3') {
+        force = true;
+    }
 
     compile 'com.pi4j:pi4j-core:1.0'
 
