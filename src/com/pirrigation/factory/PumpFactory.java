@@ -20,14 +20,14 @@ public class PumpFactory {
     @Bean
     @Scope("singleton")
     public Pump pump(Sleeper sleeper, PumpConfig config, GpioController controller) {
-        return new StubPump(sleeper);
-        //return new PiPump(controller, config.getControlPin(), sleeper);
+        //return new StubPump(sleeper);
+        return new PiPump(controller, config.getControlPin(), sleeper);
     }
 
     @Bean
     public GpioController gpioController() {
-        return Mockito.mock(GpioController.class);
-        //return GpioFactory.getInstance();
+        //return Mockito.mock(GpioController.class);
+        return GpioFactory.getInstance();
     }
 
     @Bean
