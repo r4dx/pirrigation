@@ -37,9 +37,7 @@ public class EventsScheduler implements Closeable {
         if (nextTime.equals(nextScheduledTime))
             return;
 
-        nextScheduledTime = nextTime;
         long delayNanos = getDelayNanos(nextTime);
-        onEventReschedule.accept(nextTime, delayNanos);
 
         if (delayNanos <= 0)
             throw new IllegalArgumentException("Next event occurs in past");
@@ -47,8 +45,11 @@ public class EventsScheduler implements Closeable {
         if (eventTriggerFuture != null && (isFutureRunning(eventTriggerFuture) || !eventTriggerFuture.cancel(true)))
             throw new IllegalStateException("Can't reschedule");
 
-        eventTriggerFuture = service.scheduleWithFixedDelay(() -> onEvent.accept(event),
-                delayNanos, delayNanos, TimeUnit.NANOSECONDS);
+        eventTriggerFuture = service.schedule(() -> onEvent.accept(event),
+                delayNanos, TimeUnit.NANOSECONDS);
+
+        nextScheduledTime = nextTime;
+        onEventReschedule.accept(nextTime, delayNanos);
     }
 
     private boolean isFutureRunning(ScheduledFuture<?> future) {

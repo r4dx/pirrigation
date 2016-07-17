@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -45,7 +46,7 @@ public class EventsSchedulerTest {
     private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule,
                                          Supplier<ScheduledFuture> futureSupplier, Integer repeatTimes) {
         return new EventsScheduler(
-                executorsProvider.callCallbacksImmediatelyInsteadOfFixedDelay(
+                executorsProvider.callCallbacksImmediatelyInsteadOfDelay(
                         repeatTimes == null ? REPEAT_TIMES : repeatTimes, futureSupplier),
                 onEvent,
                 onReschedule);
@@ -121,6 +122,31 @@ public class EventsSchedulerTest {
         Event event = eventMockProvider.mockEventInPast();
         EventsScheduler eventsScheduler = getScheduler(event1 -> {}, (zonedDateTime, aLong) -> {});
         eventsScheduler.schedule(event);
+    }
+
+    @Test
+    public void testEventCanBeRescheduledAfterException() {
+        AtomicBoolean thrown = new AtomicBoolean(false);
+        Event expectedEvent = eventMockProvider.mockEvent(1000);
+        final Event[] receivedEvent = { null };
+
+        EventsScheduler eventsScheduler = getScheduler(event -> {
+            if (thrown.get()) {
+                receivedEvent[0] = event;
+                return;
+            }
+
+            thrown.set(true);
+            throw new RuntimeException();
+        }, (zonedDateTime, aLong) -> {}, executorsProvider::mockFutureThatCannotBeCancelled);
+
+        try {
+            eventsScheduler.schedule(eventMockProvider.mockEvent());
+        }
+        catch (RuntimeException e) { }
+        
+        eventsScheduler.schedule(expectedEvent);
+        Assert.assertEquals(expectedEvent, receivedEvent[0]);
     }
 
     @Test(expected = IllegalStateException.class)
