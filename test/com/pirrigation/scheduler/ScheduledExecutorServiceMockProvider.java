@@ -29,6 +29,20 @@ class ScheduledExecutorServiceMockProvider {
         return service;
     }
 
+    public ScheduledExecutorService callCallbacksImmediatelyInsteadOfDelay(
+            int repeatTimes, Supplier<ScheduledFuture> futureSupplier) {
+        ScheduledExecutorService service = mock(ScheduledExecutorService.class);
+        when(service.schedule(notNull(Runnable.class), anyLong(), any(TimeUnit.class)))
+                .thenAnswer((invocation -> {
+                    Runnable callback = ((Runnable)(invocation.getArguments()[0]));
+                    for (int i = 0; i < repeatTimes; i++)
+                        callback.run();
+
+                    return futureSupplier == null ? mockFuture() : futureSupplier.get();
+                }));
+        return service;
+    }
+
     public ScheduledFuture mockFuture() {
         ScheduledFuture result = getMockedFuture();
         when(result.cancel(anyBoolean())).thenReturn(true);
