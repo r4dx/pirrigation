@@ -127,7 +127,7 @@ public class EventsSchedulerTest {
     @Test
     public void testEventCanBeRescheduledAfterException() {
         AtomicBoolean thrown = new AtomicBoolean(false);
-        Event expectedEvent = eventMockProvider.mockEvent(1000);
+        Event expectedEvent = eventMockProvider.mockEvent();
         final Event[] receivedEvent = { null };
 
         EventsScheduler eventsScheduler = getScheduler(event -> {
@@ -141,7 +141,7 @@ public class EventsSchedulerTest {
         }, (zonedDateTime, aLong) -> {}, executorsProvider::mockFutureThatCannotBeCancelled);
 
         try {
-            eventsScheduler.schedule(eventMockProvider.mockEvent());
+            eventsScheduler.schedule(expectedEvent);
         }
         catch (RuntimeException e) { }
         
