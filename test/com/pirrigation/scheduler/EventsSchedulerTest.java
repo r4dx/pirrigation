@@ -149,15 +149,6 @@ public class EventsSchedulerTest {
         Assert.assertEquals(expectedEvent, receivedEvent[0]);
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testEventCantBeCancelledThusCantBeRescheduled() {
-        EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {},
-                executorsProvider::mockFutureThatCannotBeCancelled);
-
-        eventsScheduler.schedule(eventMockProvider.mockEvent());
-        eventsScheduler.schedule(eventMockProvider.mockEvent());
-    }
-
     @Test
     public void testCanClose() throws IOException {
         EventsScheduler eventsScheduler = getScheduler(event -> {}, (zonedDateTime, aLong) -> {});
