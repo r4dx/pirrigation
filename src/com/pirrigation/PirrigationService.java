@@ -4,6 +4,7 @@ import com.pirrigation.config.PumpConfig;
 import com.pirrigation.config.SchedulerConfig;
 import com.pirrigation.event.Event;
 import com.pirrigation.scheduler.EventsScheduler;
+import com.pirrigation.scheduler.FutureUtils;
 import com.pirrigation.scheduler.GoogleEventsScheduledFetcher;
 
 import com.pirrigation.water.Pump;
@@ -71,7 +72,7 @@ public class PirrigationService implements Closeable {
                     }
                 },
                 (newTime, nanos) -> logger.info("Rescheduled, next nextEvent will be triggered at {} ({}s from now)",
-                        newTime, TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)));
+                        newTime, TimeUnit.SECONDS.convert(nanos, TimeUnit.NANOSECONDS)), new FutureUtils());
     }
 
     public void serve() {

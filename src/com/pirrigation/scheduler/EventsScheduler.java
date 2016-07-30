@@ -19,17 +19,20 @@ public class EventsScheduler implements Closeable {
     private final ScheduledExecutorService service;
     private final Consumer<Event> onEvent;
     private final BiConsumer<ZonedDateTime, Long> onEventReschedule;
+    private FutureUtils futureUtils;
 
     private ScheduledFuture<?> eventTriggerFuture;
 
     private ZonedDateTime nextScheduledTime;
 
     public EventsScheduler(ScheduledExecutorService service,
-                           Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule) {
+                           Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onEventReschedule,
+                           FutureUtils futureUtils) {
 
         this.service = service;
         this.onEvent = onEvent;
         this.onEventReschedule = onEventReschedule;
+        this.futureUtils = futureUtils;
     }
 
     public void schedule(Event event) {
@@ -42,7 +45,7 @@ public class EventsScheduler implements Closeable {
         if (delayNanos <= 0)
             throw new IllegalArgumentException("Next event occurs in past");
 
-        if (eventTriggerFuture != null && isFutureRunning(eventTriggerFuture))
+        if (eventTriggerFuture != null && futureUtils.isFutureRunning(eventTriggerFuture))
             throw new IllegalStateException("Can't reschedule");
 
         if (eventTriggerFuture != null)
@@ -53,10 +56,6 @@ public class EventsScheduler implements Closeable {
 
         nextScheduledTime = nextTime;
         onEventReschedule.accept(nextTime, delayNanos);
-    }
-
-    private boolean isFutureRunning(ScheduledFuture<?> future) {
-        return future.getDelay(TimeUnit.NANOSECONDS) <= 0;
     }
 
     private long getDelayNanos(ZonedDateTime dateTime) {

@@ -49,7 +49,7 @@ public class EventsSchedulerTest {
                 executorsProvider.callCallbacksImmediatelyInsteadOfDelay(
                         repeatTimes == null ? REPEAT_TIMES : repeatTimes, futureSupplier),
                 onEvent,
-                onReschedule);
+                onReschedule, new FutureUtils());
     }
 
     private EventsScheduler getScheduler(Consumer<Event> onEvent, BiConsumer<ZonedDateTime, Long> onReschedule,
