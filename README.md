@@ -45,6 +45,10 @@ Here's example /usr/local/pirrigation/conf/pirrigation.conf:
 3. Configure host and user variables in deploy.gradle
 3. Run gradle deploy
 
+## HTTP Methods
+1. `POST /pump?duration={time}` - starts pump for {time} duration. N.B. time is ISO-8601-compatible string - e.g. PT10S. See links for details.
+2. `GET /status` returns last and next pumping event date time.
+
 ## Google calendar configuration ##
 1. Create google project: https://console.developers.google.com
 2. Create service account https://console.developers.google.com/permissions/serviceaccounts?project=PROJECT_ID
@@ -60,3 +64,4 @@ Tested on Raspberry Pi 2 Model B.
 ## Links ##
 1. [ Pi4J ](http://pi4j.com/)
 2. [ Pin numbering for Pi 2 Model B ](http://pi4j.com/pins/model-2b-rev1.html)
+3. [ Wiki ISO 8601 Durations format description ](https://en.wikipedia.org/wiki/ISO_8601#Durations)
